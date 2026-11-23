@@ -399,7 +399,7 @@ function updateBar(){
   $("who").textContent=dispName();
 }
 async function loadReps(){
-  var rp=await sb.from("representantes").select("*");
+  var rp=await sb.from("representantes_turma").select("*");
   repRows=rp.error?null:(rp.data||[]);
   if(repRows&&repRows.length){
     var nr={};
@@ -433,7 +433,7 @@ function renderReps(){
     if(repRows.filter(function(x){return x.serie===sr}).length>=2){m.textContent="Esta turma já tem 2 representantes.";return}
     if(repRows.some(function(x){return x.serie===sr&&x.email.toLowerCase()===e})){m.textContent="Esse e-mail já é representante desta turma.";return}
     b.disabled=true;
-    var r=await sb.from("representantes").insert({email:e,serie:sr});
+    var r=await sb.from("representantes_turma").insert({email:e,serie:sr});
     b.disabled=false;
     if(r.error){m.textContent="Erro ao adicionar: "+r.error.message;return}
     await loadReps();renderReps();m.textContent="Representante adicionado!";m.className="msg ok";
@@ -442,7 +442,7 @@ function renderReps(){
     var pr=b.dataset.reprm.split("|"),sr=pr[0],e=pr.slice(1).join("|"),m=$("repMsg");
     if(!confirm("Remover "+e+" dos representantes de "+sr+"?"))return;
     m.className="msg";
-    var r=await sb.from("representantes").delete().eq("serie",sr).eq("email",e);
+    var r=await sb.from("representantes_turma").delete().eq("serie",sr).eq("email",e);
     if(r.error){m.textContent="Erro ao remover: "+r.error.message;return}
     await loadReps();renderReps();m.textContent="Representante removido.";m.className="msg ok";
   }});
