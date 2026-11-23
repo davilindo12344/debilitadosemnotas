@@ -16,7 +16,7 @@ p.sub{color:var(--mut);margin:0 0 18px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
 .card h2{font-size:1rem;margin:0 0 12px}
 label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:4px}
-input[type=text],input[type=password],input[type=number]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font-size:1rem}
+input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font-size:1rem}
 input:focus{outline:2px solid var(--ac);outline-offset:1px}
 button{background:var(--ac);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-size:.95rem;cursor:pointer;font-weight:600}
 button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
@@ -42,6 +42,7 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 .sb small{font-weight:400}
 .sb.sel{border-color:var(--ac);outline:2px solid var(--ac);outline-offset:-1px}
 @media(min-width:560px){.subs{grid-template-columns:repeat(3,1fr)}}
+.msg.ok{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -54,21 +55,33 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
     <button id="tEntrar" type="button">Entrar</button>
     <button id="tCriar" type="button" class="ghost">Criar conta</button>
   </div>
-  <label for="nome">Nome</label>
-  <input type="text" id="nome" autocomplete="username">
+  <div id="fNome" class="hide" style="margin-bottom:10px">
+    <label for="nome">Nome</label>
+    <input type="text" id="nome" autocomplete="name">
+  </div>
+  <label for="email">E-mail</label>
+  <input type="email" id="email" autocomplete="email">
   <label for="senha" style="margin-top:10px">Senha</label>
   <input type="password" id="senha" autocomplete="current-password">
   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
     <button id="go" type="button">Entrar</button>
-    <button id="guest" type="button" class="ghost">Usar sem conta</button>
+    <button id="forgot" type="button" class="ghost">Esqueci a senha</button>
   </div>
   <div class="msg" id="lmsg"></div>
-  <small>As contas ficam salvas só neste navegador/aparelho.</small>
+  <small>Suas notas ficam salvas na sua conta e aparecem em qualquer aparelho.</small>
+</section>
+
+<section id="reset" class="card hide">
+  <h2>🔑 Criar nova senha</h2>
+  <label for="rNova">Nova senha</label>
+  <input type="password" id="rNova" autocomplete="new-password">
+  <div style="margin-top:12px"><button id="rGo" type="button">Salvar nova senha</button></div>
+  <div class="msg" id="rmsg"></div>
 </section>
 
 <section id="app" class="hide">
   <div class="bar">
-    <span class="who" id="who"></span>
+    <span><span class="who" id="who"></span> <small id="sync"></small></span>
     <button class="ghost" id="logout" type="button">Sair</button>
   </div>
 
@@ -93,9 +106,13 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function(){
-var KEY="notas:users", mode="entrar", user=null;
+var SUPABASE_URL="https://nhjquqlthjtivmvdlrlt.supabase.co";
+var SUPABASE_KEY="sb_publishable_w_WLOZDCs8nvZNAi-rxuPA_YMtvjAZt";
+var sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+var mode="entrar", user=null, uid=null, timer=null, recovering=/type=recovery/.test(location.hash);
 var SUBJ=["Inglês","Matemática","Filosofia","Gramática","Biologia","Geografia","Literatura","Química","Física","Redação","Sociologia","Educação Física","História"];
 var $=function(i){return document.getElementById(i)};
 function newSub(){return{g:[[null,null,null],[null,null,null],[null,null,null]],r:[null,null,null]}}
@@ -111,51 +128,97 @@ function norm(d){
 }
 var st=def();
 
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
-function save(u){try{localStorage.setItem(KEY,JSON.stringify(u))}catch(e){}}
-async function hash(t){
-  try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
-  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
-  catch(e){return btoa(unescape(encodeURIComponent(t)))}
+function msg(t,ok){var e=$("lmsg");e.textContent=t;e.className="msg"+(ok?" ok":"")}
+function tr(m){
+  m=m||"";
+  if(/Invalid login/i.test(m))return"E-mail ou senha incorretos.";
+  if(/not confirmed/i.test(m))return"Confirme seu e-mail pelo link que enviamos antes de entrar.";
+  if(/already registered/i.test(m))return"Esse e-mail já tem conta. Tente entrar.";
+  if(/at least/i.test(m))return"A senha precisa ter pelo menos 6 caracteres.";
+  if(/rate limit|too many/i.test(m))return"Muitas tentativas. Aguarde um pouco e tente de novo.";
+  if(/valid email|invalid.*email/i.test(m))return"E-mail inválido.";
+  return m;
 }
 function persist(){
-  if(!user)return;
-  var u=load(), k=user.toLowerCase();
-  if(u[k]){u[k].data=st;save(u)}
+  if(!uid||!sb)return;
+  clearTimeout(timer);
+  $("sync").textContent="salvando...";
+  timer=setTimeout(async function(){
+    var r=await sb.from("notas").upsert({user_id:uid,dados:st,updated_at:new Date().toISOString()});
+    $("sync").textContent=r.error?"⚠️ erro ao salvar":"☁️ salvo";
+  },500);
 }
-
 function setMode(m){
   mode=m;
   $("go").textContent=m==="entrar"?"Entrar":"Criar conta";
   $("tEntrar").className=m==="entrar"?"":"ghost";
   $("tCriar").className=m==="criar"?"":"ghost";
-  $("lmsg").textContent="";
+  $("fNome").classList.toggle("hide",m!=="criar");
+  $("forgot").classList.toggle("hide",m!=="entrar");
+  $("senha").autocomplete=m==="criar"?"new-password":"current-password";
+  msg("");
 }
 $("tEntrar").onclick=function(){setMode("entrar")};
 $("tCriar").onclick=function(){setMode("criar")};
 $("go").onclick=async function(){
-  var n=$("nome").value.trim(), p=$("senha").value;
-  if(!n||!p){$("lmsg").textContent="Preencha nome e senha.";return}
-  var u=load(), k=n.toLowerCase(), h=await hash(p);
-  if(mode==="criar"){
-    if(u[k]){$("lmsg").textContent="Esse nome já existe. Tente entrar.";return}
-    u[k]={name:n,hash:h,data:def()};save(u);
-  }else{
-    if(!u[k]||u[k].hash!==h){$("lmsg").textContent="Nome ou senha incorretos.";return}
+  if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.");return}
+  var em=$("email").value.trim(), p=$("senha").value, n=$("nome").value.trim();
+  if(!em||!p){msg("Preencha e-mail e senha.");return}
+  $("go").disabled=true;
+  try{
+    if(mode==="criar"){
+      if(!n){msg("Digite seu nome.");return}
+      if(p.length<6){msg("A senha precisa ter pelo menos 6 caracteres.");return}
+      var r=await sb.auth.signUp({email:em,password:p,options:{data:{name:n},emailRedirectTo:location.origin+location.pathname}});
+      if(r.error){msg(tr(r.error.message));return}
+      if(!r.data.session){setMode("entrar");msg("Conta criada! Confirme pelo link que enviamos para o seu e-mail e depois entre.",true)}
+    }else{
+      var r2=await sb.auth.signInWithPassword({email:em,password:p});
+      if(r2.error){msg(tr(r2.error.message));return}
+    }
+  }finally{$("go").disabled=false}
+};
+$("forgot").onclick=async function(){
+  if(!sb)return;
+  var em=$("email").value.trim();
+  if(!em){msg("Digite seu e-mail acima e clique de novo.");return}
+  var r=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
+  if(r.error)msg(tr(r.error.message));else msg("Enviamos um link para o seu e-mail.",true);
+};
+$("rGo").onclick=async function(){
+  var np=$("rNova").value;
+  if(np.length<6){$("rmsg").textContent="A senha precisa ter pelo menos 6 caracteres.";return}
+  var r=await sb.auth.updateUser({password:np});
+  if(r.error){$("rmsg").textContent=tr(r.error.message);return}
+  recovering=false;$("reset").classList.add("hide");$("rNova").value="";
+  try{history.replaceState(null,"",location.pathname)}catch(e){}
+  startSession(r.data.user);
+};
+$("logout").onclick=async function(){if(sb)await sb.auth.signOut()};
+
+async function startSession(u){
+  if(uid===u.id)return;
+  uid=u.id;
+  user=(u.user_metadata&&u.user_metadata.name)||u.email;
+  var r=await sb.from("notas").select("dados").eq("user_id",uid).maybeSingle();
+  if(r.error){
+    msg("Erro ao carregar suas notas: "+r.error.message);
+    await sb.auth.signOut();
+    return;
   }
-  user=u[k].name; st=norm(u[k].data);
+  st=norm(r.data&&r.data.dados);
   enter();
-};
-$("guest").onclick=function(){user=null;st=def();enter()};
-$("logout").onclick=function(){
-  user=null;$("app").classList.add("hide");$("login").classList.remove("hide");
-  $("senha").value="";
-};
+}
 function enter(){
-  $("login").classList.add("hide");$("app").classList.remove("hide");
-  $("who").textContent=user?"👤 "+user:"👤 Visitante (não salva)";
+  $("login").classList.add("hide");$("reset").classList.add("hide");$("app").classList.remove("hide");
+  $("who").textContent="👤 "+user;$("sync").textContent="☁️ salvo";
   $("need").value=st.need;$("sOn").checked=st.s.on;
   build();render();
+}
+function showLogin(){
+  uid=null;user=null;st=def();
+  $("app").classList.add("hide");$("reset").classList.add("hide");$("login").classList.remove("hide");
+  $("senha").value="";
 }
 
 function num(v){if(v===""||v==null)return null;var x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x}
@@ -269,6 +332,16 @@ function render(){
   $("out").innerHTML=out;
 }
 setMode("entrar");
+if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.")}
+else sb.auth.onAuthStateChange(function(ev,session){
+  setTimeout(function(){
+    if(ev==="PASSWORD_RECOVERY"||recovering){
+      $("login").classList.add("hide");$("reset").classList.remove("hide");return;
+    }
+    if(session&&session.user)startSession(session.user);
+    else if(ev==="SIGNED_OUT"||ev==="INITIAL_SESSION")showLogin();
+  },0);
+});
 })();
 </script>
 </body>
