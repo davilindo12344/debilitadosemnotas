@@ -179,12 +179,12 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
     <div style="margin-top:12px"><button id="salvarPerfil" type="button">Salvar perfil</button></div><div class="msg" id="perfilMsg"></div><small>O perfil é atualizado na sua conta do Supabase.</small></div>
     <div class="card hide" id="repPanel" data-testid="rep-panel"><h2>Representantes da turma</h2><small>Cada turma tem até 2 representantes. Você pode trocar o outro representante, mas não pode remover a si mesmo.</small><div id="repLista" style="margin-top:8px"></div><div class="msg" id="repMsg"></div></div></div>
 
-  <div id="page-calendario" class="panel hide"><div class="card"><h2>Calendário de provas</h2><div id="calendarAdmin" class="hide"><div class="field-grid"><div><label for="evTitulo">Prova / atividade</label><input id="evTitulo" type="text" placeholder="Ex.: Prova de Matemática"></div><div><label for="evData">Data</label><input id="evData" type="date"></div><div><label for="evMateria">Matéria</label><input id="evMateria" type="text" placeholder="Matéria"></div><div><label for="evSerie">Série</label><select id="evSerie"></select></div></div><div style="margin-top:10px"><button id="addEvento" type="button">Adicionar ao calendário</button></div></div><div id="eventosLista"></div><div class="msg" id="calMsg"></div></div></div>
+  <div id="page-calendario" class="panel hide"><div class="card"><h2>Calendário de provas</h2><div id="calendarAdmin" class="hide" style="border:1.5px solid var(--pen);border-radius:12px;padding:14px;margin-bottom:14px;background:var(--soft)"><p style="margin:0 0 10px;font-size:.88rem;color:var(--mut)">✏️ <b>Área dos representantes</b> — preencha os campos e clique em <b>Adicionar ao calendário</b>.</p><div class="field-grid"><div><label for="evTitulo">Prova / atividade</label><input id="evTitulo" type="text" placeholder="Ex.: Prova de Matemática"></div><div><label for="evData">Data</label><input id="evData" type="date"></div><div><label for="evMateria">Matéria</label><input id="evMateria" type="text" placeholder="Matéria"></div><div><label for="evSerie">Série</label><select id="evSerie"></select></div></div><div style="margin-top:10px"><button id="addEvento" type="button">Adicionar ao calendário</button></div></div><div id="eventosLista"></div><div class="msg" id="calMsg"></div></div></div>
 
-  <div id="page-conteudos" class="panel hide"><div class="card"><h2>Conteúdos das provas</h2><div id="contentAdmin" class="hide"><label for="ctTitulo">Título</label><input id="ctTitulo" type="text" placeholder="Ex.: Conteúdo da prova de Biologia"><div class="field-grid" style="margin-top:10px"><div><label for="ctMateria">Matéria</label><input id="ctMateria" type="text" placeholder="Matéria" list="subjList"><datalist id="subjList"></datalist></div><div><label for="ctSerie">Série</label><select id="ctSerie"></select></div></div><label for="ctTexto" style="margin-top:10px">Conteúdo</label><textarea id="ctTexto" placeholder="Digite os assuntos que serão cobrados..."></textarea><div style="margin-top:10px"><button id="addConteudo" type="button">Publicar conteúdo</button></div></div><div style="margin-top:6px"><label for="ctFiltro">Filtrar por matéria</label><select id="ctFiltro" data-testid="ct-filtro"></select></div><div id="conteudosLista"></div><div class="msg" id="ctMsg"></div></div></div>
+  <div id="page-conteudos" class="panel hide"><div class="card"><h2>Conteúdos das provas</h2><div id="contentAdmin" class="hide" style="border:1.5px solid var(--pen);border-radius:12px;padding:14px;margin-bottom:14px;background:var(--soft)"><p style="margin:0 0 10px;font-size:.88rem;color:var(--mut)">✏️ <b>Área dos representantes</b> — preencha e clique em <b>Publicar conteúdo</b>.</p><label for="ctTitulo">Título</label><input id="ctTitulo" type="text" placeholder="Ex.: Conteúdo da prova de Biologia"><div class="field-grid" style="margin-top:10px"><div><label for="ctMateria">Matéria</label><input id="ctMateria" type="text" placeholder="Matéria" list="subjList"><datalist id="subjList"></datalist></div><div><label for="ctSerie">Série</label><select id="ctSerie"></select></div></div><label for="ctTexto" style="margin-top:10px">Conteúdo</label><textarea id="ctTexto" placeholder="Digite os assuntos que serão cobrados..."></textarea><div style="margin-top:10px"><button id="addConteudo" type="button">Publicar conteúdo</button></div></div><div style="margin-top:6px"><label for="ctFiltro">Filtrar por matéria</label><select id="ctFiltro" data-testid="ct-filtro"></select></div><div id="conteudosLista"></div><div class="msg" id="ctMsg"></div></div></div>
 
   <div id="page-atividades" class="panel hide"><div class="card"><h2>Atividades semanais</h2>
-    <div id="atAdmin" class="hide"><div class="field-grid"><div><label for="atTitulo">Atividade</label><input id="atTitulo" type="text" placeholder="Ex.: Lista de exercícios 5"></div><div><label for="atData">Data</label><input id="atData" type="date"></div><div><label for="atMateria">Matéria</label><input id="atMateria" type="text" placeholder="Matéria"></div><div><label for="atSerie">Série</label><select id="atSerie"></select></div></div><label for="atDesc" style="margin-top:10px">Detalhes (opcional)</label><textarea id="atDesc" style="min-height:60px"></textarea><div style="margin-top:10px"><button id="addAtividade" type="button">Adicionar atividade</button></div><hr></div>
+    <div id="atAdmin" class="hide" style="border:1.5px solid var(--pen);border-radius:12px;padding:14px;margin-bottom:14px;background:var(--soft)"><p style="margin:0 0 10px;font-size:.88rem;color:var(--mut)">✏️ <b>Área dos representantes</b> — preencha e clique em <b>Adicionar atividade</b>.</p><div class="field-grid"><div><label for="atTitulo">Atividade</label><input id="atTitulo" type="text" placeholder="Ex.: Lista de exercícios 5"></div><div><label for="atData">Data</label><input id="atData" type="date"></div><div><label for="atMateria">Matéria</label><input id="atMateria" type="text" placeholder="Matéria"></div><div><label for="atSerie">Série</label><select id="atSerie"></select></div></div><label for="atDesc" style="margin-top:10px">Detalhes (opcional)</label><textarea id="atDesc" style="min-height:60px"></textarea><div style="margin-top:10px"><button id="addAtividade" type="button">Adicionar atividade</button></div><hr></div>
     <div class="wkbar"><button class="ghost" id="wkPrev" type="button">← Anterior</button><b id="wkLabel"></b><button class="ghost" id="wkNext" type="button">Próxima →</button></div>
     <div id="atTabela"></div><div class="msg" id="atMsg"></div></div></div>
 
@@ -385,7 +385,8 @@ function updateBar(){
 async function loadReps(){
   var rp=await sb.from("representantes").select("email,serie");
   repRows=rp.error?null:(rp.data||[]);
-  if(repRows&&repRows.length){var nr={};repRows.forEach(function(x){(nr[x.serie]=nr[x.serie]||[]).push(x.email)});REPS=nr}
+  if(repRows&&repRows.length){var nr={};repRows.forEach(function(x){(nr[x.serie]=nr[x.serie]||[]).push(x.email.toLowerCase())});REPS=nr}
+  fillSeriesSelects();
 }
 function renderReps(){
   var ms=mySeries(),em=((userObj&&userObj.email)||"").toLowerCase();
@@ -575,20 +576,29 @@ $("wkNext").onclick=function(){weekOff++;renderShared()};
 /* modal de setup SQL */
 function showSqlModal(){document.getElementById("sqlModal").style.display="block"}
 
-/* ranking (sem mostrar notas: a nota nem é baixada, só usada para ordenar) */
+/* ranking */
 async function loadRank(){
   if(!sb||!uid)return;
   if(!rankSerie)rankSerie=mySerie();
   $("rkTabs").innerHTML=SERIES.map(function(s){return '<button type="button" class="'+(s===rankSerie?'':'ghost')+'" data-rk="'+esc(s)+'">'+esc(s)+'</button>'}).join("");
   Array.prototype.forEach.call(document.querySelectorAll("[data-rk]"),function(b){b.onclick=function(){rankSerie=b.dataset.rk;loadRank()}});
-  $("rkMsg").textContent="";
-  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,media,pontos").eq("serie",rankSerie).not("media","is",null).order("media",{ascending:false}).limit(50);
-  if(r.error){$("rkLista").innerHTML="<small>Nenhum dado de ranking disponível.</small>";if(r.error.message&&r.error.message.indexOf("schema cache")>=0){showSqlModal()}$("rkMsg").textContent="Configure a tabela de perfis no Supabase para ativar o ranking.";return}
+  $("rkMsg").textContent="";$("rkLista").innerHTML='<small style="color:var(--mut)">Carregando...</small>';
+  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,media").eq("serie",rankSerie).order("media",{ascending:false,nullsFirst:false}).limit(50);
+  if(r.error){
+    $("rkLista").innerHTML="<small>Nenhum dado de ranking disponível ainda.</small>";
+    if(r.error.message&&r.error.message.indexOf("schema cache")>=0){showSqlModal()}
+    $("rkMsg").textContent="Erro: "+r.error.message;return;
+  }
+  var rows=(r.data||[]).filter(function(x){return x.user_id});
+  if(!rows.length){$("rkLista").innerHTML='<small>Ninguém no ranking desta série ainda. Salve seu perfil para aparecer aqui!</small>';return}
   var med=["🥇","🥈","🥉"];
-  $("rkLista").innerHTML=(r.data||[]).map(function(x,i){
+  $("rkLista").innerHTML=rows.map(function(x,i){
     var nm=x.apelido||x.nome||"Aluno";
-    return '<div class="item rk'+(x.user_id===uid?' me':'')+'"><span class="pos">'+(i<3?med[i]:(i+1)+'º')+'</span>'+avHtml(x.foto,nm)+'<b>'+esc(nm)+'</b></div>';
-  }).join("")||'<small>Ninguém no ranking desta série ainda.</small>';
+    var fotoHtml=x.foto
+      ?'<span class="av" style="background:none"><img src="'+esc(x.foto)+'" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid var(--line)"></span>'
+      :'<span class="av" style="font-weight:700;font-size:1rem">'+esc((nm).charAt(0).toUpperCase())+'</span>';
+    return '<div class="item rk'+(x.user_id===uid?' me':'')+'"><span class="pos">'+(i<3?med[i]:(i+1)+'º')+'</span>'+fotoHtml+'<b>'+esc(nm)+'</b></div>';
+  }).join("");
 }
 
 function num(v){if(v===""||v==null)return null;var x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x}
