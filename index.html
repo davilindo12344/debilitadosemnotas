@@ -71,6 +71,13 @@ hr{border:0;border-top:1.5px dashed var(--line);margin:16px 0}
 .chip.done{background:transparent;border:1.5px solid var(--line);color:var(--mut);font-weight:500}
 #app>small{display:block;margin-top:6px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.nav button{flex:1;min-width:105px}.nav button.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.panel{margin-top:12px}.tri-tabs{display:flex;gap:6px;margin-bottom:12px}.tri-tabs button{flex:1;padding:9px 5px}.tri-tabs button.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field-grid>div{min-width:0}
+input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit}textarea{min-height:90px;resize:vertical}
+.item{padding:12px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:var(--paper)}.item h3{margin:0 0 5px;font-size:1rem}.item p{margin:6px 0;white-space:pre-wrap}.item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.item-actions button{padding:7px 11px;font-size:.82rem}
+@media(max-width:420px){.field-grid{grid-template-columns:1fr}.nav button{min-width:85px;font-size:.82rem;padding:9px 8px}}
 </style>
 </head>
 <body>
@@ -90,6 +97,8 @@ hr{border:0;border-top:1.5px dashed var(--line);margin:16px 0}
   <input type="email" id="email" autocomplete="email">
   <label for="senha" style="margin-top:10px">Senha</label>
   <input type="password" id="senha" autocomplete="current-password">
+  <label for="serieAcesso" style="margin-top:10px">Sua série (opcional)</label>
+  <select id="serieAcesso"><option value="">Selecione sua série</option><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option><option>1ª série</option><option>2ª série</option><option>3ª série</option></select>
   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
     <button id="go" type="button">Entrar</button>
     <button id="forgot" type="button" class="ghost">Esqueci a senha</button>
@@ -107,25 +116,21 @@ hr{border:0;border-top:1.5px dashed var(--line);margin:16px 0}
 </section>
 
 <section id="app" class="hide">
-  <div class="bar">
-    <span><span class="who" id="who"></span> <small id="sync"></small></span>
-    <button class="ghost" id="logout" type="button">Sair</button>
+  <div class="bar"><span><span class="who" id="who"></span> <small id="sync"></small></span><button class="ghost" id="logout" type="button">Sair</button></div>
+  <nav class="nav" aria-label="Menu principal">
+    <button type="button" data-page="notas">Notas</button><button type="button" class="ghost" data-page="perfil">Perfil</button><button type="button" class="ghost" data-page="calendario">Calendário</button><button type="button" class="ghost" data-page="conteudos">Conteúdos</button>
+  </nav>
+  <div id="page-notas" class="panel">
+    <div class="card"><h2>Matérias</h2><div class="subs" id="subs"></div></div>
+    <div class="card"><h2>SECIC no 3º trimestre</h2><label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> Vou ter SECIC no 3º trimestre (+3 pontos)</label><small>O SECIC vale exatamente 3 pontos: 1 em cada AV do 3º tri, ou tudo na AV que faltar nota, sem passar de 10 por AV.</small></div>
+    <h2 id="subTitle"></h2>
+    <div class="tri-tabs"><button type="button" data-tri="0">1º trimestre</button><button type="button" class="ghost" data-tri="1">2º trimestre</button><button type="button" class="ghost" data-tri="2">3º trimestre</button></div>
+    <div id="tris"></div><div class="card res" id="out"></div>
+    <div class="card" id="annual"></div>
   </div>
-
-  <div class="card">
-    <h2>Matérias</h2>
-    <div class="subs" id="subs"></div>
-  </div>
-
-  <div class="card">
-    <h2>SECIC no 3º trimestre</h2>
-    <label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> Vou ter SECIC no 3º trimestre (+3 pontos)</label>
-    <small>O SECIC vale exatamente 3 pontos: 1 em cada AV do 3º tri, ou tudo na AV que faltar nota, sem passar de 10 por AV.</small>
-  </div>
-
-  <h2 id="subTitle"></h2>
-  <div id="tris"></div>
-  <div class="card res" id="out"></div>
+  <div id="page-perfil" class="panel hide"><div class="card"><h2>Meu perfil</h2><label for="perfilNome">Nome</label><input id="perfilNome" type="text"><label for="perfilSerie" style="margin-top:10px">Série</label><select id="perfilSerie"><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option><option>1ª série</option><option>2ª série</option><option>3ª série</option></select><div style="margin-top:12px"><button id="salvarPerfil" type="button">Salvar perfil</button></div><div class="msg" id="perfilMsg"></div><small>O perfil é atualizado na sua conta do Supabase.</small></div></div>
+  <div id="page-calendario" class="panel hide"><div class="card"><h2>Calendário de provas</h2><div id="calendarAdmin" class="hide"><div class="field-grid"><div><label for="evTitulo">Prova / atividade</label><input id="evTitulo" type="text" placeholder="Ex.: Prova de Matemática"></div><div><label for="evData">Data</label><input id="evData" type="date"></div><div><label for="evMateria">Matéria</label><input id="evMateria" type="text" placeholder="Matéria"></div><div><label for="evSerie">Série (opcional)</label><select id="evSerie"><option value="">Todas as séries</option><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option><option>1ª série</option><option>2ª série</option><option>3ª série</option></select></div></div><div style="margin-top:10px"><button id="addEvento" type="button">Adicionar ao calendário</button></div></div><div id="eventosLista"></div><div class="msg" id="calMsg"></div></div></div>
+  <div id="page-conteudos" class="panel hide"><div class="card"><h2>Conteúdos das provas</h2><div id="contentAdmin" class="hide"><label for="ctTitulo">Título</label><input id="ctTitulo" type="text" placeholder="Ex.: Conteúdo da prova de Biologia"><div class="field-grid" style="margin-top:10px"><div><label for="ctMateria">Matéria</label><input id="ctMateria" type="text" placeholder="Matéria"></div><div><label for="ctSerie">Série</label><select id="ctSerie"><option value="">Todas as séries</option><option>6º ano</option><option>7º ano</option><option>8º ano</option><option>9º ano</option><option>1ª série</option><option>2ª série</option><option>3ª série</option></select></div></div><label for="ctTexto" style="margin-top:10px">Conteúdo</label><textarea id="ctTexto" placeholder="Digite os assuntos que serão cobrados..."></textarea><div style="margin-top:10px"><button id="addConteudo" type="button">Publicar conteúdo</button></div></div><div id="conteudosLista"></div><div class="msg" id="ctMsg"></div></div></div>
 </section>
 </main>
 
@@ -135,7 +140,10 @@ hr{border:0;border-top:1.5px dashed var(--line);margin:16px 0}
 var SUPABASE_URL="https://nhjquqlthjtivmvdlrlt.supabase.co";
 var SUPABASE_KEY="sb_publishable_w_WLOZDCs8nvZNAi-rxuPA_YMtvjAZt";
 var sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
-var mode="entrar", user=null, uid=null, timer=null, recovering=/type=recovery/.test(location.hash);
+var mode="entrar", user=null, uid=null, timer=null, activeTri=0, sharedEvents=[], sharedContents=[], recovering=/type=recovery/.test(location.hash);
+// Troque pelos e-mails das pessoas autorizadas a publicar/alterar calendário e conteúdos.
+var EDITOR_EMAILS=["professor@escola.com","coordenacao@escola.com"];
+var isEditor=false, userObj=null, editingEvent=null, editingContent=null;
 var SUBJ=["Inglês","Matemática","Filosofia","Gramática","Biologia","Geografia","Literatura","Química","Física","Redação","Sociologia","Educação Física","História"];
 var $=function(i){return document.getElementById(i)};
 function newSub(){return{g:[[null,null,null],[null,null,null],[null,null,null]],r:[null,null,null]}}
@@ -192,12 +200,29 @@ $("go").onclick=async function(){
     if(mode==="criar"){
       if(!n){msg("Digite seu nome.");return}
       if(p.length<6){msg("A senha precisa ter pelo menos 6 caracteres.");return}
-      var r=await sb.auth.signUp({email:em,password:p,options:{data:{name:n},emailRedirectTo:location.origin+location.pathname}});
+      var r=await sb.auth.signUp({email:em,password:p,options:{data:{name:n,serie:serie},emailRedirectTo:location.origin+location.pathname}});
       if(r.error){msg(tr(r.error.message));return}
-      if(!r.data.session){setMode("entrar");msg("Conta criada! Confirme pelo link que enviamos para o seu e-mail e depois entre.",true)}
+      if(!r.data.session){
+function showPage(name){["notas","perfil","calendario","conteudos"].forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"":"ghost"});}
+Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
+$("salvarPerfil").onclick=async function(){var nm=$("perfilNome").value.trim(), sr=$("perfilSerie").value;if(!nm){$("perfilMsg").textContent="Informe seu nome.";return}var r=await sb.auth.updateUser({data:{name:nm,serie:sr}});if(r.error){$("perfilMsg").textContent=r.error.message;return}user=nm;userObj=r.data.user;$("who").textContent="👤 "+user;$("perfilMsg").textContent="Perfil atualizado!";$("perfilMsg").className="msg ok"};
+async function loadShared(){if(!sb||!uid)return;var a=await sb.from("conteudos_escolares").select("*").order("event_date",{ascending:true});if(a.error){$("calMsg").textContent="Configure a tabela compartilhada no Supabase para ativar calendário e conteúdos.";$("ctMsg").textContent="Configure a tabela compartilhada no Supabase para ativar conteúdos.";return}sharedEvents=(a.data||[]).filter(function(x){return x.kind==="evento"});sharedContents=(a.data||[]).filter(function(x){return x.kind==="conteudo"});renderShared();}
+function esc(x){return String(x||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function renderShared(){var sr=(userObj&&userObj.user_metadata&&userObj.user_metadata.serie)||"";$("eventosLista").innerHTML=sharedEvents.filter(function(x){return !x.series||!sr||x.series===sr}).map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.event_date||"Data a definir")+' · '+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small>'+ (isEditor?'<div class="item-actions"><button class="ghost" data-edit-event="'+esc(x.id)+'">Editar</button><button class="ghost" data-del="'+esc(x.id)+'">Excluir</button></div>':'')+'</div>'}).join("")||'<small>Nenhuma prova cadastrada.</small>';
+$("conteudosLista").innerHTML=sharedContents.filter(function(x){return !x.series||!sr||x.series===sr}).map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small><p>'+esc(x.description)+'</p>'+(isEditor?'<div class="item-actions"><button class="ghost" data-edit-content="'+esc(x.id)+'">Editar</button><button class="ghost" data-del="'+esc(x.id)+'">Excluir</button></div>':'')+'</div>'}).join("")||'<small>Nenhum conteúdo publicado.</small>';
+Array.prototype.forEach.call(document.querySelectorAll("[data-del]"),function(b){b.onclick=async function(){if(!isEditor)return;var r=await sb.from("conteudos_escolares").delete().eq("id",b.dataset.del);if(r.error){alert(r.error.message);return}loadShared()}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-edit-event]"),function(b){b.onclick=function(){var x=sharedEvents.find(function(v){return v.id===b.dataset.editEvent});if(!x)return;editingEvent=x.id;$("evTitulo").value=x.title||"";$("evData").value=x.event_date||"";$("evMateria").value=x.subject||"";$("evSerie").value=x.series||"";$("addEvento").textContent="Salvar alterações";showPage("calendario")}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-edit-content]"),function(b){b.onclick=function(){var x=sharedContents.find(function(v){return v.id===b.dataset.editContent});if(!x)return;editingContent=x.id;$("ctTitulo").value=x.title||"";$("ctMateria").value=x.subject||"";$("ctTexto").value=x.description||"";$("ctSerie").value=x.series||"";$("addConteudo").textContent="Salvar alterações";showPage("conteudos")}})}
+async function publishShared(kind,title,subject,description,date,series,msgId,editing){if(!isEditor){$(msgId).textContent="Você não tem permissão para publicar.";return}if(!title.trim()){ $(msgId).textContent="Preencha o título.";return}var row={kind:kind,title:title.trim(),subject:subject.trim(),description:description||"",event_date:date||null,series:series||null,updated_by:uid,updated_at:new Date().toISOString()};var r=editing?await sb.from("conteudos_escolares").update(row).eq("id",editing):await sb.from("conteudos_escolares").insert(Object.assign({id:kind+"-"+Date.now()},row));if(r.error){$(msgId).textContent="Erro ao salvar: "+r.error.message;return}$(msgId).textContent=editing?"Alterações salvas!":"Publicado!";$(msgId).className="msg ok";if(kind==="evento"){editingEvent=null;$("evTitulo").value="";$("evData").value="";$("evMateria").value="";$("evSerie").value="";$("addEvento").textContent="Adicionar ao calendário"}else{editingContent=null;$("ctTitulo").value="";$("ctMateria").value="";$("ctTexto").value="";$("ctSerie").value="";$("addConteudo").textContent="Publicar conteúdo"}loadShared()}
+$("addEvento").onclick=function(){publishShared("evento",$("evTitulo").value,$("evMateria").value,"",$("evData").value,$("evSerie").value,"calMsg",editingEvent)};
+$("addConteudo").onclick=function(){publishShared("conteudo",$("ctTitulo").value,$("ctMateria").value,$("ctTexto").value,"",$("ctSerie").value,"ctMsg",editingContent)};
+
+setMode("entrar");msg("Conta criada! Confirme pelo link que enviamos para o seu e-mail e depois entre.",true)}
     }else{
       var r2=await sb.auth.signInWithPassword({email:em,password:p});
       if(r2.error){msg(tr(r2.error.message));return}
+      if($("serieAcesso").value){var sr=await sb.auth.updateUser({data:{serie:$("serieAcesso").value}});if(sr.error){msg("Login realizado, mas não foi possível atualizar a série: "+sr.error.message);return}}
     }
   }finally{$("go").disabled=false}
 };
@@ -221,8 +246,9 @@ $("logout").onclick=async function(){if(sb)await sb.auth.signOut()};
 
 async function startSession(u){
   if(uid===u.id)return;
-  uid=u.id;
+  uid=u.id;userObj=u;
   user=(u.user_metadata&&u.user_metadata.name)||u.email;
+  isEditor=EDITOR_EMAILS.map(function(x){return x.toLowerCase()}).indexOf((u.email||"").toLowerCase())>=0;
   var r=await sb.from("notas").select("dados").eq("user_id",uid).maybeSingle();
   if(r.error){
     msg("Erro ao carregar suas notas: "+r.error.message);
@@ -231,15 +257,20 @@ async function startSession(u){
   }
   st=norm(r.data&&r.data.dados);
   enter();
+  loadShared();
 }
 function enter(){
   $("login").classList.add("hide");$("reset").classList.add("hide");$("app").classList.remove("hide");
   $("who").textContent="👤 "+user;$("sync").textContent="☁️ salvo";
   $("sOn").checked=st.s.on;
-  build();render();
+  var meta=(userObj&&userObj.user_metadata)||{};
+  $("perfilNome").value=meta.name||user;
+  $("perfilSerie").value=meta.serie||"9º ano";
+  $("calendarAdmin").classList.toggle("hide",!isEditor);$("contentAdmin").classList.toggle("hide",!isEditor);
+  showPage("notas");build();render();
 }
 function showLogin(){
-  uid=null;user=null;st=def();
+  uid=null;user=null;userObj=null;isEditor=false;st=def();
   $("app").classList.add("hide");$("reset").classList.add("hide");$("login").classList.remove("hide");
   $("senha").value="";
 }
@@ -255,12 +286,12 @@ function inp(t,a,v){return '<div><label>'+(a<3?'AV'+(a+1):'AVR')+'</label><input
 function build(){
   var d=st.sub[st.sel], h="";
   $("subTitle").textContent=st.sel;
-  for(var t=0;t<3;t++){
-    h+='<div class="card"><h2>'+(t+1)+'º Trimestre <small id="sub'+t+'"></small></h2><div class="row">';
-    IDX(st.sel).forEach(function(a){h+=inp(t,a,d.g[t][a])});
-    h+=inp(t,3,d.r[t])+'</div></div>';
-  }
+  var t=activeTri;
+  h+='<div class="card"><h2>'+(t+1)+'º Trimestre <small id="sub'+t+'"></small></h2><div class="row">';
+  IDX(st.sel).forEach(function(a){h+=inp(t,a,d.g[t][a])});
+  h+=inp(t,3,d.r[t])+'</div></div>';
   $("tris").innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.className=(+b.dataset.tri===activeTri?"":"ghost")});
   Array.prototype.forEach.call(document.querySelectorAll(".g"),function(el){
     el.oninput=function(){
       var v=num(el.value); if(v!=null)v=Math.min(10,Math.max(0,v));
@@ -327,9 +358,7 @@ function render(){
   });
 
   var d=st.sub[st.sel], b=bonus(), o=A(d,b,st.sel);
-  for(var t=0;t<3;t++){
-    $("sub"+t).textContent="média "+f(o.T[t])+(o.rep[t]?" (AVR)":(t===2&&b&&!o.rep[t]?" (com SECIC)":""));
-  }
+  $("sub"+activeTri).textContent="média "+f(o.T[activeTri])+(o.rep[activeTri]?" (AVR)":(activeTri===2&&b&&!o.rep[activeTri]?" (com SECIC)":""));
   var pct=Math.min(100,Math.max(0,st.need?o.total/st.need*100:0));
   var out='<h2>Resultado em '+st.sel+'</h2><div>Total atual: <b>'+f(o.total)+'</b> de <b>'+f(st.need)+'</b> <small>(soma das 3 médias, máx. 30)</small></div>';
   out+='<div class="prog"><div style="width:'+pct+'%"></div></div>';
@@ -353,7 +382,25 @@ function render(){
   if(b>0){out+=scen("Com SECIC ("+f(b)+" pts)",b)+scen("Sem SECIC",0)}
   else out+=scen("",0);
   $("out").innerHTML=out;
+  var annual=o.total/3, needed=Math.max(0,(50-6*annual)/4);
+  $("annual").innerHTML='<h2>Média anual e recuperação final</h2><p>Média anual: <b>'+f(annual)+'</b></p><p>Soma das médias dos trimestres: <b>'+f(o.total)+'</b> de 30</p><p>Nota necessária na recuperação final (PNAF): <b>'+ (needed>10?'Acima de 10':f(Math.round(needed*10+1e-9)/10)) +'</b> de 10</p><small>Cálculo conforme a tabela da escola: PNAF = (50 − 6 × média anual) ÷ 4. A tabela pode arredondar para uma casa decimal.</small>';
 }
+
+function showPage(name){["notas","perfil","calendario","conteudos"].forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"":"ghost"});}
+Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
+$("salvarPerfil").onclick=async function(){var nm=$("perfilNome").value.trim(), sr=$("perfilSerie").value;if(!nm){$("perfilMsg").textContent="Informe seu nome.";return}var r=await sb.auth.updateUser({data:{name:nm,serie:sr}});if(r.error){$("perfilMsg").textContent=r.error.message;return}user=nm;userObj=r.data.user;$("who").textContent="👤 "+user;$("perfilMsg").textContent="Perfil atualizado!";$("perfilMsg").className="msg ok"};
+async function loadShared(){if(!sb||!uid)return;var a=await sb.from("conteudos_escolares").select("*").order("event_date",{ascending:true});if(a.error){$("calMsg").textContent="Configure a tabela compartilhada no Supabase para ativar calendário e conteúdos.";$("ctMsg").textContent="Configure a tabela compartilhada no Supabase para ativar conteúdos.";return}sharedEvents=(a.data||[]).filter(function(x){return x.kind==="evento"});sharedContents=(a.data||[]).filter(function(x){return x.kind==="conteudo"});renderShared();}
+function esc(x){return String(x||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function renderShared(){var sr=(userObj&&userObj.user_metadata&&userObj.user_metadata.serie)||"";$("eventosLista").innerHTML=sharedEvents.filter(function(x){return !x.series||!sr||x.series===sr}).map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.event_date||"Data a definir")+' · '+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small>'+ (isEditor?'<div class="item-actions"><button class="ghost" data-del="'+esc(x.id)+'">Excluir</button></div>':'')+'</div>'}).join("")||'<small>Nenhuma prova cadastrada.</small>';
+$("conteudosLista").innerHTML=sharedContents.filter(function(x){return !x.series||!sr||x.series===sr}).map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small><p>'+esc(x.description)+'</p>'+(isEditor?'<div class="item-actions"><button class="ghost" data-del="'+esc(x.id)+'">Excluir</button></div>':'')+'</div>'}).join("")||'<small>Nenhum conteúdo publicado.</small>';
+Array.prototype.forEach.call(document.querySelectorAll("[data-del]"),function(b){b.onclick=async function(){if(!isEditor)return;var r=await sb.from("conteudos_escolares").delete().eq("id",b.dataset.del);if(r.error){alert(r.error.message);return}loadShared()}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-edit-event]"),function(b){b.onclick=function(){var x=sharedEvents.find(function(v){return v.id===b.dataset.editEvent});if(!x)return;editingEvent=x.id;$("evTitulo").value=x.title||"";$("evData").value=x.event_date||"";$("evMateria").value=x.subject||"";$("evSerie").value=x.series||"";$("addEvento").textContent="Salvar alterações";showPage("calendario")}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-edit-content]"),function(b){b.onclick=function(){var x=sharedContents.find(function(v){return v.id===b.dataset.editContent});if(!x)return;editingContent=x.id;$("ctTitulo").value=x.title||"";$("ctMateria").value=x.subject||"";$("ctTexto").value=x.description||"";$("ctSerie").value=x.series||"";$("addConteudo").textContent="Salvar alterações";showPage("conteudos")}})}
+async function publishShared(kind,title,subject,description,date,series,msgId,editing){if(!isEditor){$(msgId).textContent="Você não tem permissão para publicar.";return}if(!title.trim()){ $(msgId).textContent="Preencha o título.";return}var row={kind:kind,title:title.trim(),subject:subject.trim(),description:description||"",event_date:date||null,series:series||null,updated_by:uid,updated_at:new Date().toISOString()};var r=editing?await sb.from("conteudos_escolares").update(row).eq("id",editing):await sb.from("conteudos_escolares").insert(Object.assign({id:kind+"-"+Date.now()},row));if(r.error){$(msgId).textContent="Erro ao salvar: "+r.error.message;return}$(msgId).textContent=editing?"Alterações salvas!":"Publicado!";$(msgId).className="msg ok";if(kind==="evento"){editingEvent=null;$("evTitulo").value="";$("evData").value="";$("evMateria").value="";$("evSerie").value="";$("addEvento").textContent="Adicionar ao calendário"}else{editingContent=null;$("ctTitulo").value="";$("ctMateria").value="";$("ctTexto").value="";$("ctSerie").value="";$("addConteudo").textContent="Publicar conteúdo"}loadShared()}
+$("addEvento").onclick=function(){publishShared("evento",$("evTitulo").value,$("evMateria").value,"",$("evData").value,$("evSerie").value,"calMsg",editingEvent)};
+$("addConteudo").onclick=function(){publishShared("conteudo",$("ctTitulo").value,$("ctMateria").value,$("ctTexto").value,"",$("ctSerie").value,"ctMsg",editingContent)};
+
 setMode("entrar");
 if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.")}
 else sb.auth.onAuthStateChange(function(ev,session){
