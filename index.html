@@ -3,52 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculadora de Notas</title>
+<title>Jeito Damas de Ser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--tx:#1c2033;--mut:#6b7190;--bd:#e1e4f0;--ac:#4f46e5;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141f;--card:#1c1f30;--tx:#eceefa;--mut:#9aa0c0;--bd:#2d3150;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#12141f;--card:#1c1f30;--tx:#eceefa;--mut:#9aa0c0;--bd:#2d3150;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;color-scheme:dark}
+:root{--paper:#f1f4fb;--grid:rgba(44,69,232,.07);--card:#fff;--ink:#141b3a;--mut:#5a6283;--line:#d9dff0;--soft:#e7ebf7;--pen:#2c45e8;--onpen:#fff;--red:#e0383e;--ok:#0c8559;--bad:#cf2f39;--warn:#a85f00;--hl:#ffe14d;--display:"Bricolage Grotesque",system-ui,sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0e1228;--grid:rgba(138,160,255,.07);--card:#171c3a;--ink:#eef0ff;--mut:#9aa3cc;--line:#2a3160;--soft:#1f2548;--pen:#8aa0ff;--onpen:#0e1228;--red:#ff6b70;--ok:#4fd8a1;--bad:#ff7b80;--warn:#ffc15a;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0e1228;--grid:rgba(138,160,255,.07);--card:#171c3a;--ink:#eef0ff;--mut:#9aa3cc;--line:#2a3160;--soft:#1f2548;--pen:#8aa0ff;--onpen:#0e1228;--red:#ff6b70;--ok:#4fd8a1;--bad:#ff7b80;--warn:#ffc15a;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
-main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
-h1{font-size:1.5rem;margin:8px 0 4px}
-p.sub{color:var(--mut);margin:0 0 18px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
-.card h2{font-size:1rem;margin:0 0 12px}
-label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:4px}
-input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font-size:1rem}
-input:focus{outline:2px solid var(--ac);outline-offset:1px}
-button{background:var(--ac);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-size:.95rem;cursor:pointer;font-weight:600}
-button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+body{margin:0;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:28px 16px 56px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.9rem,7vw,2.6rem);line-height:1.05;letter-spacing:-.025em;margin:6px 0 22px}
+p.sub{color:var(--mut);margin:0 0 22px;max-width:46ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.card h2{font-family:var(--display);font-size:1.1rem;font-weight:700;letter-spacing:-.01em;margin:0 0 14px}
+#subTitle{font-family:var(--display);font-weight:800;font-size:1.6rem;letter-spacing:-.02em;margin:28px 0 12px}
+label{display:block;font-size:.82rem;font-weight:500;color:var(--mut);margin-bottom:5px}
+input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input:focus{border-color:var(--pen)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+button{font:inherit;font-weight:600;font-size:.95rem;background:var(--pen);color:var(--onpen);border:0;border-radius:10px;padding:11px 18px;cursor:pointer;transition:transform .08s}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.6;cursor:default}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.tabs{display:flex;gap:8px;margin-bottom:12px}
-.tabs button{flex:1}
-.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
-.who{font-weight:600}
-.sw{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--tx);font-size:.95rem}
-.sw input{width:18px;height:18px}
-.res{border-left:4px solid var(--ac)}
-.big{font-size:1.8rem;font-weight:800;margin:2px 0}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:16px}
+.tabs button{flex:1;border-radius:9px}
+.tabs button.ghost{background:transparent;border:0;color:var(--mut)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px}
+.who{font-weight:700}
+#sync{color:var(--mut);margin-left:6px}
+.bar button{padding:8px 14px;font-size:.88rem}
+label.sw{display:flex;align-items:center;gap:10px;font-size:1rem;font-weight:500;color:var(--ink);cursor:pointer;margin:14px 0 8px}
+.sw input{width:20px;height:20px;accent-color:var(--pen)}
+small{color:var(--mut);font-size:.82rem}
 .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-.chip{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;margin:3px 4px 3px 0;font-size:.85rem}
-.msg{color:var(--bad);font-size:.9rem;min-height:1.2em;margin-top:8px}
-.prog{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--bd);margin:8px 0}
-.prog div{height:100%;background:var(--ac);transition:width .3s}
-.hide{display:none}
-small{color:var(--mut)}
-hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
-.subs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.sb{background:var(--bg);color:var(--tx);border:1px solid var(--bd);text-align:left;display:flex;flex-direction:column;gap:2px;padding:9px 12px;font-weight:600}
-.sb small{font-weight:400}
-.sb.sel{border-color:var(--ac);outline:2px solid var(--ac);outline-offset:-1px}
-@media(min-width:560px){.subs{grid-template-columns:repeat(3,1fr)}}
+.msg{color:var(--bad);font-size:.9rem;min-height:1.2em;margin-top:10px}
 .msg.ok{color:var(--ok)}
+.hide{display:none}
+hr{border:0;border-top:1.5px dashed var(--line);margin:16px 0}
+.subs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:560px){.subs{grid-template-columns:repeat(3,1fr)}}
+.sb{background:var(--paper);color:var(--ink);border:1.5px solid var(--line);text-align:left;display:flex;flex-direction:column;gap:1px;padding:10px 12px;border-radius:12px;font-weight:700;line-height:1.25}
+.sb small{font-weight:500;color:var(--mut);font-size:.78rem}
+.sb.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sb.sel small{color:inherit;opacity:.8}
+#tris .card{position:relative;padding-left:26px}
+#tris .card::before{content:"";position:absolute;left:11px;top:0;bottom:0;width:2px;background:var(--red);opacity:.4}
+#tris h2{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#tris h2 small{font-family:"Figtree",system-ui,sans-serif;font-weight:700;color:var(--ink);font-size:.9rem}
+#tris .row{grid-template-columns:repeat(4,1fr);gap:8px}
+#tris label{text-align:center}
+.g{text-align:center;font-family:var(--display);font-weight:700;font-size:1.25rem;padding:12px 4px}
+.g[data-a="3"]{border-style:dashed}
+.res{padding:20px}
+.res b{font-weight:800}
+.prog{height:12px;background:var(--soft);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.prog div{height:100%;background:var(--pen);border-radius:99px;transition:width .3s}
+.need{display:flex;align-items:center;gap:16px;margin:14px 0 10px;font-weight:600}
+.circ{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;padding:10px 22px;border:3px solid var(--red);border-radius:52% 48% 55% 45%/58% 50% 50% 42%;transform:rotate(-3deg);color:var(--ink);flex:none}
+.big{display:block;width:fit-content;font-family:var(--display);font-weight:800;font-size:1.5rem;padding:6px 16px;border:3px double currentColor;border-radius:10px;transform:rotate(-2deg);margin:12px 0 10px}
+.chip{display:inline-block;background:var(--hl);color:#141b3a;border-radius:8px;padding:4px 10px;margin:4px 6px 4px 0;font-size:.88rem;font-weight:600}
+.chip.done{background:transparent;border:1.5px solid var(--line);color:var(--mut);font-weight:500}
+#app>small{display:block;margin-top:6px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <main>
-<h1>📘 Calculadora de Notas</h1>
-<p class="sub">Cada AV vale 10. A nota do trimestre é a média das 3 AVs.</p>
+<h1>Jeito Damas de Ser</h1>
 
 <section id="login" class="card">
   <div class="tabs">
@@ -72,7 +98,7 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 </section>
 
 <section id="reset" class="card hide">
-  <h2>🔑 Criar nova senha</h2>
+  <h2>Criar nova senha</h2>
   <label for="rNova">Nova senha</label>
   <input type="password" id="rNova" autocomplete="new-password">
   <div style="margin-top:12px"><button id="rGo" type="button">Salvar nova senha</button></div>
@@ -86,12 +112,12 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
   </div>
 
   <div class="card">
-    <h2>📚 Matérias</h2>
+    <h2>Matérias</h2>
     <div class="subs" id="subs"></div>
   </div>
 
   <div class="card">
-    <h2>⚙️ Configuração (vale para todas)</h2>
+    <h2>Configuração para todas as matérias</h2>
     <div class="row">
       <div><label>Total das 3 médias p/ passar</label><input type="number" id="need" step="0.1" min="0"></div>
     </div>
@@ -99,7 +125,7 @@ hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
     <small>O SECIC vale exatamente 3 pontos: 1 em cada AV do 3º tri, ou tudo na AV que faltar nota, sem passar de 10 por AV.</small>
   </div>
 
-  <h2 id="subTitle" style="font-size:1.2rem;margin:18px 0 10px"></h2>
+  <h2 id="subTitle"></h2>
   <div id="tris"></div>
   <div class="card res" id="out"></div>
   <small>AVR: se for maior que a média do trimestre, ela substitui essa média. Arredondamento da média: 6,96 vira 7 e 6,95 fica 6,9. Educação Física: só AV1 e AV3, média = soma ÷ 2.</small>
@@ -227,7 +253,7 @@ function f(x){return (Math.round(x*100)/100).toString().replace(".",",")}
 function R(x){return Math.floor(x*10+0.4+1e-9)/10}
 /* nota necessária: sempre arredonda pra cima (1 casa) */
 function c1(x){return f(Math.ceil(x*10-1e-9)/10)}
-function inp(t,a,v){return '<div><label>'+(a<3?'AV'+(a+1):'AVR (recuperação)')+'</label><input type="number" step="0.1" min="0" max="10" class="g" data-t="'+t+'" data-a="'+a+'" value="'+(v==null?"":v)+'"></div>'}
+function inp(t,a,v){return '<div><label>'+(a<3?'AV'+(a+1):'AVR')+'</label><input type="number" step="0.1" min="0" max="10" class="g" data-t="'+t+'" data-a="'+a+'" value="'+(v==null?"":v)+'"></div>'}
 
 function build(){
   var d=st.sub[st.sel], h="";
@@ -305,22 +331,22 @@ function render(){
 
   var d=st.sub[st.sel], b=bonus(), o=A(d,b,st.sel);
   for(var t=0;t<3;t++){
-    $("sub"+t).textContent="— média "+f(o.T[t])+(o.rep[t]?" (AVR)":(t===2&&b&&!o.rep[t]?" (com SECIC)":""));
+    $("sub"+t).textContent="média "+f(o.T[t])+(o.rep[t]?" (AVR)":(t===2&&b&&!o.rep[t]?" (com SECIC)":""));
   }
   var pct=Math.min(100,Math.max(0,st.need?o.total/st.need*100:0));
-  var out='<h2>📊 '+st.sel+'</h2><div>Total atual: <b>'+f(o.total)+'</b> de <b>'+f(st.need)+'</b> <small>(soma das 3 médias, máx. 30)</small></div>';
+  var out='<h2>Resultado em '+st.sel+'</h2><div>Total atual: <b>'+f(o.total)+'</b> de <b>'+f(st.need)+'</b> <small>(soma das 3 médias, máx. 30)</small></div>';
   out+='<div class="prog"><div style="width:'+pct+'%"></div></div>';
 
   function scen(title,b){
     var o=A(d,b,st.sel), r=title?'<hr><b>'+title+'</b>':'';
-    if(o.state==="passed")return r+'<div class="big ok">✅ Já passou!</div><small>'+(d.r[2]!=null&&o.rep[2]?'Com a AVR você fecha.':'Com o que você já tem (e/ou zerando o que falta) você fecha '+f(st.need)+'.')+'</small>';
+    if(o.state==="passed")return r+'<div class="big ok">Já passou!</div><small>'+(d.r[2]!=null&&o.rep[2]?'Com a AVR você fecha.':'Com o que você já tem (e/ou zerando o que falta) você fecha '+f(st.need)+'.')+'</small>';
     if(o.state==="impossible"){
-      return r+'<div class="big bad">❌ Sem chance</div><small>'+(o.faltam!=null?'Mesmo tirando 10 em tudo, faltariam '+f(o.faltam)+' pt(s) no total.':'Precisaria de média '+f(o.req)+' no 3º trimestre (máx. 10).')+'</small>';
+      return r+'<div class="big bad">Sem chance</div><small>'+(o.faltam!=null?'Mesmo tirando 10 em tudo, faltariam '+f(o.faltam)+' pt(s) no total.':'Precisaria de média '+f(o.req)+' no 3º trimestre (máx. 10).')+'</small>';
     }
-    if(o.state==="avr")return r+'<div class="big warn">🔁 Só pela AVR</div><small>Pelas AVs não dá. Na AVR do 3º trimestre você precisa de <b>'+c1(o.avr)+'</b>.</small>';
+    if(o.state==="avr")return r+'<div class="big warn">Só pela AVR</div><small>Pelas AVs não dá. Na AVR do 3º trimestre você precisa de <b>'+c1(o.avr)+'</b>.</small>';
     var c=o.per>8.5?"warn":"ok";
-    var x='<div class="big '+c+'">'+c1(o.per)+' <small>'+(o.blanks>1?'em média, em cada AV':'na '+o.names[0])+'</small></div><div>';
-    o.ix.forEach(function(q){var gv=d.g[2][q];x+='<span class="chip">AV'+(q+1)+': '+(gv!=null?f(gv)+' ✓ (já tirou)':'precisa de '+c1(o.per))+'</span>'});
+    var x='<div class="need '+c+'"><span class="circ">'+c1(o.per)+'</span><span>'+(o.blanks>1?'em média, em cada AV':'na '+o.names[0])+'</span></div><div>';
+    o.ix.forEach(function(q){var gv=d.g[2][q];x+='<span class="chip'+(gv!=null?' done':'')+'">AV'+(q+1)+': '+(gv!=null?f(gv)+' ✓ (já tirou)':'precisa de '+c1(o.per))+'</span>'});
     x+='</div>';
     if(b)x+='<small>Já contando o SECIC completando até 10 em cada AV.</small>';
     else if(o.blanks>1)x+='<small>Soma necessária nas AVs que faltam: '+c1(o.nb)+' de '+(10*o.blanks)+'. Pode dividir como quiser.</small>';
