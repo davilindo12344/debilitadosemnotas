@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de Notas</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1c2033;--mut:#6b7190;--bd:#e1e4f0;--ac:#4f46e5;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141f;--card:#1c1f30;--tx:#eceefa;--mut:#9aa0c0;--bd:#2d3150;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12141f;--card:#1c1f30;--tx:#eceefa;--mut:#9aa0c0;--bd:#2d3150;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:8px 0 4px}
+p.sub{color:var(--mut);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{font-size:1rem;margin:0 0 12px}
+label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:4px}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font-size:1rem}
+input:focus{outline:2px solid var(--ac);outline-offset:1px}
+button{background:var(--ac);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-size:.95rem;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
+.who{font-weight:600}
+.sw{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--tx);font-size:.95rem}
+.sw input{width:18px;height:18px}
+.res{border-left:4px solid var(--ac)}
+.big{font-size:1.8rem;font-weight:800;margin:2px 0}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;margin:3px 4px 3px 0;font-size:.85rem}
+.msg{color:var(--bad);font-size:.9rem;min-height:1.2em;margin-top:8px}
+.prog{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--bd);margin:8px 0}
+.prog div{height:100%;background:var(--ac);transition:width .3s}
+.hide{display:none}
+small{color:var(--mut)}
+hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
+.subs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sb{background:var(--bg);color:var(--tx);border:1px solid var(--bd);text-align:left;display:flex;flex-direction:column;gap:2px;padding:9px 12px;font-weight:600}
+.sb small{font-weight:400}
+.sb.sel{border-color:var(--ac);outline:2px solid var(--ac);outline-offset:-1px}
+@media(min-width:560px){.subs{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main>
+<h1>📘 Calculadora de Notas</h1>
+<p class="sub">Cada AV vale 10. A nota do trimestre é a média das 3 AVs.</p>
+
+<section id="login" class="card">
+  <div class="tabs">
+    <button id="tEntrar" type="button">Entrar</button>
+    <button id="tCriar" type="button" class="ghost">Criar conta</button>
+  </div>
+  <label for="nome">Nome</label>
+  <input type="text" id="nome" autocomplete="username">
+  <label for="senha" style="margin-top:10px">Senha</label>
+  <input type="password" id="senha" autocomplete="current-password">
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button id="go" type="button">Entrar</button>
+    <button id="guest" type="button" class="ghost">Usar sem conta</button>
+  </div>
+  <div class="msg" id="lmsg"></div>
+  <small>As contas ficam salvas só neste navegador/aparelho.</small>
+</section>
+
+<section id="app" class="hide">
+  <div class="bar">
+    <span class="who" id="who"></span>
+    <button class="ghost" id="logout" type="button">Sair</button>
+  </div>
+
+  <div class="card">
+    <h2>📚 Matérias</h2>
+    <div class="subs" id="subs"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Configuração (vale para todas)</h2>
+    <div class="row">
+      <div><label>Total das 3 médias p/ passar</label><input type="number" id="need" step="0.1" min="0"></div>
+    </div>
+    <label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> Vou ter SECIC no 3º trimestre (+3 pontos)</label>
+    <small>O SECIC vale exatamente 3 pontos: 1 em cada AV do 3º tri, ou tudo na AV que faltar nota, sem passar de 10 por AV.</small>
+  </div>
+
+  <h2 id="subTitle" style="font-size:1.2rem;margin:18px 0 10px"></h2>
+  <div id="tris"></div>
+  <div class="card res" id="out"></div>
+  <small>AVR: se for maior que a média do trimestre, ela substitui essa média. Arredondamento da média: 6,96 vira 7 e 6,95 fica 6,9. Educação Física: só AV1 e AV3, média = soma ÷ 2.</small>
+</section>
+</main>
+
+<script>
+(function(){
+var KEY="notas:users", mode="entrar", user=null;
+var SUBJ=["Inglês","Matemática","Filosofia","Gramática","Biologia","Geografia","Literatura","Química","Física","Redação","Sociologia","Educação Física","História"];
+var $=function(i){return document.getElementById(i)};
+function newSub(){return{g:[[null,null,null],[null,null,null],[null,null,null]],r:[null,null,null]}}
+function def(){var o={need:21,s:{on:false,max:3},sel:SUBJ[0],sub:{}};SUBJ.forEach(function(n){o.sub[n]=newSub()});return o}
+function norm(d){
+  var o=def();
+  if(!d)return o;
+  if(d.need!=null)o.need=d.need;
+  if(d.s&&d.s.max!=null)o.s={on:!!d.s.on,max:d.s.max};
+  if(d.sub){SUBJ.forEach(function(n){if(d.sub[n]){o.sub[n]=d.sub[n];if(!o.sub[n].r)o.sub[n].r=[null,null,null]}});if(d.sel&&o.sub[d.sel])o.sel=d.sel}
+  else if(d.g){o.sub[SUBJ[0]].g=d.g}
+  return o;
+}
+var st=def();
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(u){try{localStorage.setItem(KEY,JSON.stringify(u))}catch(e){}}
+async function hash(t){
+  try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+  catch(e){return btoa(unescape(encodeURIComponent(t)))}
+}
+function persist(){
+  if(!user)return;
+  var u=load(), k=user.toLowerCase();
+  if(u[k]){u[k].data=st;save(u)}
+}
+
+function setMode(m){
+  mode=m;
+  $("go").textContent=m==="entrar"?"Entrar":"Criar conta";
+  $("tEntrar").className=m==="entrar"?"":"ghost";
+  $("tCriar").className=m==="criar"?"":"ghost";
+  $("lmsg").textContent="";
+}
+$("tEntrar").onclick=function(){setMode("entrar")};
+$("tCriar").onclick=function(){setMode("criar")};
+$("go").onclick=async function(){
+  var n=$("nome").value.trim(), p=$("senha").value;
+  if(!n||!p){$("lmsg").textContent="Preencha nome e senha.";return}
+  var u=load(), k=n.toLowerCase(), h=await hash(p);
+  if(mode==="criar"){
+    if(u[k]){$("lmsg").textContent="Esse nome já existe. Tente entrar.";return}
+    u[k]={name:n,hash:h,data:def()};save(u);
+  }else{
+    if(!u[k]||u[k].hash!==h){$("lmsg").textContent="Nome ou senha incorretos.";return}
+  }
+  user=u[k].name; st=norm(u[k].data);
+  enter();
+};
+$("guest").onclick=function(){user=null;st=def();enter()};
+$("logout").onclick=function(){
+  user=null;$("app").classList.add("hide");$("login").classList.remove("hide");
+  $("senha").value="";
+};
+function enter(){
+  $("login").classList.add("hide");$("app").classList.remove("hide");
+  $("who").textContent=user?"👤 "+user:"👤 Visitante (não salva)";
+  $("need").value=st.need;$("sOn").checked=st.s.on;
+  build();render();
+}
+
+function num(v){if(v===""||v==null)return null;var x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x}
+function f(x){return (Math.round(x*100)/100).toString().replace(".",",")}
+/* média do trimestre: 6,96 → 7,0 | 6,95 → 6,9 */
+function R(x){return Math.floor(x*10+0.4+1e-9)/10}
+/* nota necessária: sempre arredonda pra cima (1 casa) */
+function c1(x){return f(Math.ceil(x*10-1e-9)/10)}
+function inp(t,a,v){return '<div><label>'+(a<3?'AV'+(a+1):'AVR (recuperação)')+'</label><input type="number" step="0.1" min="0" max="10" class="g" data-t="'+t+'" data-a="'+a+'" value="'+(v==null?"":v)+'"></div>'}
+
+function build(){
+  var d=st.sub[st.sel], h="";
+  $("subTitle").textContent=st.sel;
+  for(var t=0;t<3;t++){
+    h+='<div class="card"><h2>'+(t+1)+'º Trimestre <small id="sub'+t+'"></small></h2><div class="row">';
+    IDX(st.sel).forEach(function(a){h+=inp(t,a,d.g[t][a])});
+    h+=inp(t,3,d.r[t])+'</div></div>';
+  }
+  $("tris").innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll(".g"),function(el){
+    el.oninput=function(){
+      var v=num(el.value); if(v!=null)v=Math.min(10,Math.max(0,v));
+      var t=+el.dataset.t,a=+el.dataset.a,dd=st.sub[st.sel];
+      if(a<3)dd.g[t][a]=v;else dd.r[t]=v;
+      persist();render();
+    };
+  });
+}
+$("need").oninput=function(){st.need=num(this.value)||0;persist();render()};
+
+$("sOn").onchange=function(){st.s.on=this.checked;persist();render()};
+
+/* análise de uma matéria */
+function IDX(n){return n==="Educação Física"?[0,2]:[0,1,2]}
+function A(d,b,nm){
+  var ix=IDX(nm),N=ix.length;
+  var T=[0,0,0],k3=0,blanks=0,names=[],rep=[false,false,false];
+  for(var t=0;t<3;t++){
+    var s=0;
+    for(var j=0;j<N;j++){
+      var a=ix[j],v=d.g[t][a];
+      if(v!=null)s+=v; else if(t===2){blanks++;names.push("AV"+(a+1))}
+    }
+    var avg=R(t<2?s/N:Math.min(10*N,s+b)/N);
+    if(t===2)k3=s;
+    var r=d.r[t];
+    if(r!=null&&r>avg){T[t]=r;rep[t]=true}else T[t]=avg;
+  }
+  var total=T[0]+T[1]+T[2], r3=d.r[2];
+  var req=st.need-T[0]-T[1], o={T:T,rep:rep,total:total,req:req,blanks:blanks,names:names,N:N,ix:ix,state:"",avr:null};
+  if(req>0&&req<=10&&r3==null)o.avr=req;
+  if(req<=1e-9||(r3!=null&&r3+1e-9>=req)){o.state="passed";return o}
+  if(req>10+1e-9){o.state="impossible";o.short=(req-10);return o}
+  if(blanks===0){
+    if(R(Math.min(10*N,k3+b)/N)+1e-9>=req)o.state="passed";
+    else o.state=r3==null?"avr":"impossible";
+    return o;
+  }
+  var nb=N*(req-0.04)-b-k3;
+  if(nb<=1e-9){o.state="passed";return o}
+  o.nb=nb;o.per=nb/blanks;
+  if(o.per<=10+1e-9)o.state="need";
+  else{o.state=r3==null?"avr":"impossible";o.faltam=(nb-10*blanks)/N}
+  return o;
+}
+function bonus(){return st.s.on?3:0}
+function short(o){
+  if(o.state==="passed")return["✅","passou"];
+  if(o.state==="need")return["⏳","precisa "+c1(o.per)+(o.blanks>1?" por AV":" na "+o.names[0])];
+  if(o.state==="avr")return["🔁","AVR: "+c1(o.avr)];
+  return["❌","sem chance"];
+}
+
+function render(){
+  var h="";
+  SUBJ.forEach(function(n){
+    var o=A(st.sub[n],bonus(),n), s=short(o);
+    h+='<button type="button" class="sb'+(n===st.sel?' sel':'')+'" data-n="'+n+'">'+s[0]+' '+n+'<small>'+f(o.total)+' pts · '+s[1]+'</small></button>';
+  });
+  $("subs").innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(b){
+    b.onclick=function(){st.sel=b.dataset.n;persist();build();render()};
+  });
+
+  var d=st.sub[st.sel], b=bonus(), o=A(d,b,st.sel);
+  for(var t=0;t<3;t++){
+    $("sub"+t).textContent="— média "+f(o.T[t])+(o.rep[t]?" (AVR)":(t===2&&b&&!o.rep[t]?" (com SECIC)":""));
+  }
+  var pct=Math.min(100,Math.max(0,st.need?o.total/st.need*100:0));
+  var out='<h2>📊 '+st.sel+'</h2><div>Total atual: <b>'+f(o.total)+'</b> de <b>'+f(st.need)+'</b> <small>(soma das 3 médias, máx. 30)</small></div>';
+  out+='<div class="prog"><div style="width:'+pct+'%"></div></div>';
+
+  function scen(title,b){
+    var o=A(d,b,st.sel), r=title?'<hr><b>'+title+'</b>':'';
+    if(o.state==="passed")return r+'<div class="big ok">✅ Já passou!</div><small>'+(d.r[2]!=null&&o.rep[2]?'Com a AVR você fecha.':'Com o que você já tem (e/ou zerando o que falta) você fecha '+f(st.need)+'.')+'</small>';
+    if(o.state==="impossible"){
+      return r+'<div class="big bad">❌ Sem chance</div><small>'+(o.faltam!=null?'Mesmo tirando 10 em tudo, faltariam '+f(o.faltam)+' pt(s) no total.':'Precisaria de média '+f(o.req)+' no 3º trimestre (máx. 10).')+'</small>';
+    }
+    if(o.state==="avr")return r+'<div class="big warn">🔁 Só pela AVR</div><small>Pelas AVs não dá. Na AVR do 3º trimestre você precisa de <b>'+c1(o.avr)+'</b>.</small>';
+    var c=o.per>8.5?"warn":"ok";
+    var x='<div class="big '+c+'">'+c1(o.per)+' <small>'+(o.blanks>1?'em média, em cada AV':'na '+o.names[0])+'</small></div><div>';
+    o.ix.forEach(function(q){var gv=d.g[2][q];x+='<span class="chip">AV'+(q+1)+': '+(gv!=null?f(gv)+' ✓ (já tirou)':'precisa de '+c1(o.per))+'</span>'});
+    x+='</div>';
+    if(b)x+='<small>Já contando o SECIC completando até 10 em cada AV.</small>';
+    else if(o.blanks>1)x+='<small>Soma necessária nas AVs que faltam: '+c1(o.nb)+' de '+(10*o.blanks)+'. Pode dividir como quiser.</small>';
+    if(o.avr!=null)x+='<br><small>Plano B: AVR do 3º tri com <b>'+c1(o.avr)+'</b>.</small>';
+    return r+x;
+  }
+  if(b>0){out+=scen("Com SECIC ("+f(b)+" pts)",b)+scen("Sem SECIC",0)}
+  else out+=scen("",0);
+  $("out").innerHTML=out;
+}
+setMode("entrar");
+})();
+</script>
+</body>
+</html>
