@@ -266,8 +266,24 @@ function normStore(d,serie){
 var store=normStore(null,SERIES[0]), st=store.anos[store.ano];
 
 function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function normSerie(s){
+  var v=String(s==null?"":s).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  return SERIES.find(function(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")===v})||"";
+}
 function mySerie(){var s=userObj&&userObj.user_metadata&&userObj.user_metadata.serie;return SERIES.indexOf(s)>=0?s:SERIES[0]}
-function mySeries(){var em=((userObj&&userObj.email)||"").toLowerCase();return SERIES.filter(function(s){return (REPS[s]||[]).some(function(e){return e.toLowerCase()===em})})}
+function mySeries(){
+  var em=((userObj&&userObj.email)||"").trim().toLowerCase(),meta=(userObj&&userObj.user_metadata)||{};
+  var role=String(meta.role||meta.perfil||meta.tipo||meta.cargo||"").trim().toLowerCase();
+  var markedRep=meta.is_representative===true||meta.representante===true||["representante","representative","rep"].indexOf(role)>=0;
+  var byEmail=repRows&&repRows.length
+    ? repRows.filter(function(x){return String(x.email||x.email_representante||x.representante_email||"").trim().toLowerCase()===em})
+        .map(function(x){return normSerie(x.serie||x.series||x.turma||x.classe)||mySerie()})
+        .filter(function(s,i,a){return s&&a.indexOf(s)===i})
+    : SERIES.filter(function(s){return (REPS[s]||[]).some(function(e){return String(e).trim().toLowerCase()===em})});
+  if(byEmail.length)return byEmail;
+  if(markedRep){var serie=mySerie();return serie?[serie]:[]}
+  return [];
+}
 function canEdit(series){return !!series&&mySeries().indexOf(series)>=0}
 function dispName(){return prof.apelido||user||""}
 function avHtml(foto,name,cls){return '<span class="av '+(cls||"")+'">'+(foto?'<img src="'+esc(foto)+'" alt="">':esc((name||"?").charAt(0).toUpperCase()))+'</span>'}
@@ -383,9 +399,19 @@ function updateBar(){
   $("who").textContent=dispName();
 }
 async function loadReps(){
-  var rp=await sb.from("representantes").select("email,serie");
+  var rp=await sb.from("representantes").select("*");
   repRows=rp.error?null:(rp.data||[]);
-  if(repRows&&repRows.length){var nr={};repRows.forEach(function(x){(nr[x.serie]=nr[x.serie]||[]).push(x.email.toLowerCase())});REPS=nr}
+  if(repRows&&repRows.length){
+    var nr={};
+    repRows.forEach(function(x){
+      var email=String(x.email||x.email_representante||x.representante_email||"").trim().toLowerCase();
+      var serie=normSerie(x.serie||x.series||x.turma||x.classe);
+      x.email=email;
+      x.serie=serie;
+      if(email&&serie)(nr[serie]=nr[serie]||[]).push(email);
+    });
+    if(Object.keys(nr).length)REPS=nr;
+  }
   fillSeriesSelects();
 }
 function renderReps(){
