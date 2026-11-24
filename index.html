@@ -644,11 +644,12 @@ function rankRound(x){
 function rankingAnnual(y,nm){
   var z=y&&y.sub&&y.sub[nm];
   if(!z||!z.g)return null;
+  var indices=IDX(nm);
   var tri=[];
   for(var t=0;t<3;t++){
     var vals=z.g[t]||[],sum=0;
-    vals.forEach(function(v){if(v!=null)sum+=Number(v)});
-    var av=vals.length?sum/vals.length:0;
+    indices.forEach(function(i){if(vals[i]!=null)sum+=Number(vals[i])});
+    var av=indices.length?sum/indices.length:0;
     if(z.r&&z.r[t]!=null)av=Math.max(av,Number(z.r[t]));
     tri.push(av);
   }
