@@ -647,13 +647,16 @@ function rankingAnnual(y,nm){
   var indices=IDX(nm);
   var tri=[];
   var secic=y.s&&y.s.on?3:0;
+  var hasNotes=false;
   for(var t=0;t<3;t++){
     var vals=z.g[t]||[],sum=0;
-    indices.forEach(function(i){if(vals[i]!=null)sum+=Number(vals[i])});
+    indices.forEach(function(i){if(vals[i]!=null){hasNotes=true;sum+=Number(vals[i])}});
+    if(z.r&&z.r[t]!=null)hasNotes=true;
     var av=R(t<2?sum/indices.length:Math.min(10*indices.length,sum+secic)/indices.length);
     if(z.r&&z.r[t]!=null)av=Math.max(av,Number(z.r[t]));
     tri.push(av);
   }
+  if(!hasNotes)return null;
   return (tri[0]+tri[1]+tri[2])/3;
 }
 async function loadRank(){
