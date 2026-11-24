@@ -154,6 +154,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
           <button type="button" data-page="conteudos">Conteúdos</button>
           <button type="button" data-page="atividades">Atividades semanais</button>
           <button type="button" data-page="ranking">Ranking</button>
+          <button type="button" data-page="conversao">Conversão do simulado</button>
         </div>
       </div>
       <span class="who-wrap"><span id="barAv"></span><span><span class="who" id="who"></span> <small id="sync"></small></span></span>
@@ -188,7 +189,8 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
     <div class="wkbar"><button class="ghost" id="wkPrev" type="button">← Anterior</button><b id="wkLabel"></b><button class="ghost" id="wkNext" type="button">Próxima →</button></div>
     <div id="atTabela"></div><div class="msg" id="atMsg"></div></div></div>
 
-  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking de melhores notas</h2><div class="tri-tabs" id="rkTabs"></div><small>Posição baseada na média geral do ano. As notas não são exibidas.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
+  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><div class="tri-tabs" id="rkTabs"></div><div class="tri-tabs" id="rkSubjTabs" style="margin-top:8px"></div><small>Ranking separado por série e matéria, calculado pela média anual da matéria.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
+  <div id="page-conversao" class="panel hide"><div class="card"><h2>Conversão do simulado</h2><p>Informe a média obtida no simulado (0 a 1000) para ver a nota equivalente da AV2.</p><div class="field-grid"><div><label for="simMedia">Média do simulado</label><input id="simMedia" type="number" min="0" max="1000" step="1" placeholder="Ex.: 650"></div><div><label for="simArea">Área</label><select id="simArea"><option value="chcn">Ciências Humanas e Ciências da Natureza</option><option value="mt">Matemática</option><option value="lc">Linguagens</option></select></div></div><button id="simConverter" type="button" style="margin-top:12px">Converter para nota da AV2</button><div id="simResultado" class="big ok" style="margin-top:14px;display:none"></div><div id="simFaixa" class="msg"></div></div></div>
 </section>
 </main>
 
@@ -478,7 +480,7 @@ function showLogin(){
 function closeMenu(){$("menuList").classList.add("hide");$("burger").setAttribute("aria-expanded","false")}
 $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classList.toggle("hide");this.setAttribute("aria-expanded",h?"false":"true")};
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
-var PAGES=["notas","perfil","calendario","conteudos","atividades","ranking"];
+var PAGES=["notas","perfil","calendario","conteudos","atividades","ranking","conversao"];
 function showPage(name){
   PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
@@ -599,31 +601,74 @@ $("subjList").innerHTML=SUBJ.map(function(n){return '<option value="'+esc(n)+'">
 $("wkPrev").onclick=function(){weekOff--;renderShared()};
 $("wkNext").onclick=function(){weekOff++;renderShared()};
 
+/* conversão da média do simulado para a nota da AV2 */
+var SIM_CONV=[
+  {max:0,chcn:0,mt:0,lc:0},
+  {max:200,chcn:0.9,mt:0.9,lc:1.0},
+  {max:250,chcn:1.8,mt:1.8,lc:2.0},
+  {max:300,chcn:2.7,mt:2.7,lc:2.8},
+  {max:350,chcn:3.0,mt:3.0,lc:3.4},
+  {max:400,chcn:3.6,mt:3.6,lc:4.2},
+  {max:450,chcn:4.2,mt:4.2,lc:5.0},
+  {max:500,chcn:4.9,mt:4.8,lc:5.8},
+  {max:550,chcn:5.6,mt:5.4,lc:6.6},
+  {max:600,chcn:6.3,mt:6.0,lc:7.4},
+  {max:650,chcn:7.0,mt:6.6,lc:8.2},
+  {max:700,chcn:7.7,mt:7.2,lc:9.0},
+  {max:750,chcn:8.3,mt:7.8,lc:9.0},
+  {max:800,chcn:9.0,mt:8.4,lc:9.0},
+  {max:1000,chcn:9.0,mt:9.0,lc:9.0}
+];
+function converterSimulado(){
+  var media=Number($("simMedia").value),area=$("simArea").value,r=$("simResultado"),f=$("simFaixa");
+  r.style.display="none";f.className="msg";
+  if(!Number.isFinite(media)||media<0||media>1000){f.textContent="Informe uma média entre 0 e 1000.";return}
+  var faixa=SIM_CONV.find(function(x){return media<=x.max})||SIM_CONV[SIM_CONV.length-1];
+  var nota=faixa[area];
+  r.textContent="Nota equivalente da AV2: "+nota.toFixed(1).replace(".",",");
+  r.style.display="block";
+  f.textContent="Faixa utilizada: até "+faixa.max+" pontos.";
+}
+$("simConverter").onclick=converterSimulado;
+$("simMedia").onkeydown=function(e){if(e.key==="Enter")converterSimulado()};
+
 /* modal de setup SQL */
 function showSqlModal(){document.getElementById("sqlModal").style.display="block"}
 
 /* ranking */
+var rankSubject=SUBJ[0];
 async function loadRank(){
   if(!sb||!uid)return;
   if(!rankSerie)rankSerie=mySerie();
   $("rkTabs").innerHTML=SERIES.map(function(s){return '<button type="button" class="'+(s===rankSerie?'':'ghost')+'" data-rk="'+esc(s)+'">'+esc(s)+'</button>'}).join("");
   Array.prototype.forEach.call(document.querySelectorAll("[data-rk]"),function(b){b.onclick=function(){rankSerie=b.dataset.rk;loadRank()}});
+  $("rkSubjTabs").innerHTML=SUBJ.map(function(s){return '<button type="button" class="'+(s===rankSubject?'':'ghost')+'" data-rks="'+esc(s)+'">'+esc(s)+'</button>'}).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-rks]"),function(b){b.onclick=function(){rankSubject=b.dataset.rks;loadRank()}});
   $("rkMsg").textContent="";$("rkLista").innerHTML='<small style="color:var(--mut)">Carregando...</small>';
-  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,media").eq("serie",rankSerie).order("media",{ascending:false,nullsFirst:false}).limit(50);
+  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,serie").eq("serie",rankSerie).limit(100);
   if(r.error){
     $("rkLista").innerHTML="<small>Nenhum dado de ranking disponível ainda.</small>";
     if(r.error.message&&r.error.message.indexOf("schema cache")>=0){showSqlModal()}
     $("rkMsg").textContent="Erro: "+r.error.message;return;
   }
-  var rows=(r.data||[]).filter(function(x){return x.user_id});
-  if(!rows.length){$("rkLista").innerHTML='<small>Ninguém no ranking desta série ainda. Salve seu perfil para aparecer aqui!</small>';return}
+  var ids=(r.data||[]).map(function(x){return x.user_id}).filter(Boolean);
+  if(!ids.length){$("rkLista").innerHTML='<small>Ninguém no ranking desta série ainda.</small>';return}
+  var nr=await sb.from("notas").select("user_id,dados").in("user_id",ids);
+  if(nr.error){$("rkMsg").textContent="Erro ao carregar as notas: "+nr.error.message;return}
+  var byId={};(nr.data||[]).forEach(function(x){byId[x.user_id]=x.dados||{}});
+  var rows=(r.data||[]).map(function(x){
+    var d=byId[x.user_id],y=d&&d.anos&&d.anos[rankSerie],sub=y&&y.sub&&y.sub[rankSubject],total=0,count=0;
+    if(sub&&sub.g){for(var t=0;t<3;t++){var vals=sub.g[t]||[],sum=0,c=0;vals.forEach(function(v){if(v!=null){sum+=Number(v);c++}});if(c){total+=sum/c;count++}}}
+    return Object.assign({},x,{score:count?total/count:null});
+  }).filter(function(x){return x.score!=null}).sort(function(a,b){return b.score-a.score}).slice(0,50);
+  if(!rows.length){$("rkLista").innerHTML='<small>Nenhuma nota lançada para '+esc(rankSubject)+' nesta série.</small>';return}
   var med=["🥇","🥈","🥉"];
   $("rkLista").innerHTML=rows.map(function(x,i){
     var nm=x.apelido||x.nome||"Aluno";
     var fotoHtml=x.foto
       ?'<span class="av" style="background:none"><img src="'+esc(x.foto)+'" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid var(--line)"></span>'
       :'<span class="av" style="font-weight:700;font-size:1rem">'+esc((nm).charAt(0).toUpperCase())+'</span>';
-    return '<div class="item rk'+(x.user_id===uid?' me':'')+'"><span class="pos">'+(i<3?med[i]:(i+1)+'º')+'</span>'+fotoHtml+'<b>'+esc(nm)+'</b></div>';
+    return '<div class="item rk'+(x.user_id===uid?' me':'')+'"><span class="pos">'+(i<3?med[i]:(i+1)+'º')+'</span>'+fotoHtml+'<b>'+esc(nm)+'</b><span style="margin-left:auto"><b>'+f(x.score)+'</b></span></div>';
   }).join("");
 }
 
