@@ -646,10 +646,11 @@ function rankingAnnual(y,nm){
   if(!z||!z.g)return null;
   var indices=IDX(nm);
   var tri=[];
+  var secic=y.s&&y.s.on?3:0;
   for(var t=0;t<3;t++){
     var vals=z.g[t]||[],sum=0;
     indices.forEach(function(i){if(vals[i]!=null)sum+=Number(vals[i])});
-    var av=indices.length?sum/indices.length:0;
+    var av=R(t<2?sum/indices.length:Math.min(10*indices.length,sum+secic)/indices.length);
     if(z.r&&z.r[t]!=null)av=Math.max(av,Number(z.r[t]));
     tri.push(av);
   }
