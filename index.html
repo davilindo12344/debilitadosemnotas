@@ -524,7 +524,7 @@ async function loadReps(){
   fillSeriesSelects();
 }
 function renderReps(){
-  var admin=isRepAdmin(),ms=admin?SERIES.slice():mySeries(),em=((userObj&&userObj.email)||"").toLowerCase();
+  var admin=isRepAdmin(),ms=admin?SERIES.slice():[mySerie()],em=((userObj&&userObj.email)||"").toLowerCase();
   $("repPanel").classList.toggle("hide",!ms.length);
   if(!ms.length)return;
   if(!repRows){$("repLista").innerHTML="";$("repMsg").className="msg";$("repMsg").textContent="Crie a tabela representantes no Supabase para gerenciar por aqui.";return}
