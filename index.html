@@ -589,7 +589,7 @@ $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classLis
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
 var PAGES=["notas","desempenho","calendario","atividades","conteudos","estudos","ranking","configuracoes","perfil","assinatura"];
 function showPage(name){
-  PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
+  PAGES.forEach(function(p){var page=$("page-"+p);if(page)page.classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
   closeMenu();
   if(name==="estudos"){fillFcMaterias();carregarFlashcards();mostrarEstudo("flash")}
