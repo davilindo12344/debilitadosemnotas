@@ -190,7 +190,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
     <div class="wkbar"><button class="ghost" id="wkPrev" type="button">← Anterior</button><b id="wkLabel"></b><button class="ghost" id="wkNext" type="button">Próxima →</button></div>
     <div id="atTabela"></div><div class="msg" id="atMsg"></div></div></div>
 
-  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><div class="tri-tabs" id="rkTabs"></div><label for="rkSubjectSelect" style="display:block;margin-top:10px">Matéria</label><select id="rkSubjectSelect" style="width:100%;margin-top:6px"><option value="__all__">Todas as matérias</option></select><small>Escolha uma matéria ou veja a classificação geral da série.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
+  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><button type="button" class="ghost" id="rkToggle" style="margin-bottom:10px">Não aparecer no ranking</button><div class="tri-tabs" id="rkTabs"></div><label for="rkSubjectSelect" style="display:block;margin-top:10px">Matéria</label><select id="rkSubjectSelect" style="width:100%;margin-top:6px"><option value="__all__">Todas as matérias</option></select><small>Escolha uma matéria ou veja a classificação geral da série.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
   <div id="page-conversao" class="panel hide"><div class="card"><h2>Conversão do simulado</h2><p>Informe a média obtida no simulado (0 a 1000) para ver a nota equivalente da AV2.</p><div class="field-grid"><div><label for="simMedia">Média do simulado</label><input id="simMedia" type="number" min="0" max="1000" step="1" placeholder="Ex.: 650"></div><div><label for="simArea">Área</label><select id="simArea"><option value="chcn">Ciências Humanas e Ciências da Natureza</option><option value="mt">Matemática</option><option value="lc">Linguagens</option></select></div></div><button id="simConverter" type="button" style="margin-top:12px">Converter para nota da AV2</button><div id="simResultado" class="big ok" style="margin-top:14px;display:none"></div><div id="simFaixa" class="msg"></div></div></div>
   <div id="page-estudos" class="panel hide">
 
@@ -837,8 +837,12 @@ async function loadRank(){
   $("rkSubjectSelect").innerHTML='<option value="__all__">Todas as matérias</option>'+subjectsFor(rankSerie).map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>'}).join("");
   $("rkSubjectSelect").value=rankSubject;
   $("rkSubjectSelect").onchange=function(){rankSubject=this.value;loadRank()};
+  var me=await sb.from("perfis").select("ranking_visivel").eq("user_id",uid).maybeSingle();
+  var visivel=!me.data||me.data.ranking_visivel!==false;
+  $("rkToggle").textContent=visivel?"Não aparecer no ranking":"Aparecer no ranking novamente";
+  $("rkToggle").onclick=function(){toggleRanking(visivel)};
   $("rkMsg").textContent="";$("rkLista").innerHTML='<small style="color:var(--mut)">Carregando...</small>';
-  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,serie").eq("serie",rankSerie).limit(100);
+  var r=await sb.from("perfis").select("user_id,nome,apelido,foto,serie,ranking_visivel").eq("serie",rankSerie).eq("ranking_visivel",true).limit(100);
   if(r.error){
     $("rkLista").innerHTML="<small>Nenhum dado de ranking disponível ainda.</small>";
     if(r.error.message&&r.error.message.indexOf("schema cache")>=0){showSqlModal()}
@@ -868,6 +872,11 @@ async function loadRank(){
       :'<span class="av" style="font-weight:700;font-size:1rem">'+esc((nm).charAt(0).toUpperCase())+'</span>';
     return '<div class="item rk'+(x.user_id===uid?' me':'')+'"><span class="pos">'+(i<3?med[i]:(i+1)+'º')+'</span>'+fotoHtml+'<b>'+esc(nm)+'</b><span style="margin-left:auto"><b>'+rankRound(x.score)+'</b></span></div>';
   }).join("");
+}
+async function toggleRanking(visivel){
+  var r=await sb.from("perfis").update({ranking_visivel:!visivel}).eq("user_id",uid);
+  if(r.error){$("rkMsg").textContent="Não foi possível alterar sua visibilidade: "+r.error.message;return}
+  loadRank();
 }
 
 function num(v){if(v===""||v==null)return null;var x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x}
