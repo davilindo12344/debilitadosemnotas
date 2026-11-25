@@ -323,7 +323,10 @@ function normSerie(s){
   return SERIES.find(function(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")===v})||"";
 }
 function mySerie(){var s=userObj&&userObj.user_metadata&&userObj.user_metadata.serie;return SERIES.indexOf(s)>=0?s:SERIES[0]}
-function isRepAdmin(){return String(userObj&&userObj.email||"").trim().toLowerCase()===REPRESENTANTE_ADMIN}
+function isRepAdmin(){
+  var meta=(userObj&&userObj.user_metadata)||{},email=(userObj&&userObj.email)||meta.email||user||"";
+  return String(email).trim().toLowerCase()===REPRESENTANTE_ADMIN;
+}
 function mySeries(){
   if(isRepAdmin())return SERIES.slice();
   var em=((userObj&&userObj.email)||"").trim().toLowerCase(),meta=(userObj&&userObj.user_metadata)||{};
