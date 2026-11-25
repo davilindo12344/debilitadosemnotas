@@ -261,6 +261,7 @@ CREATE POLICY "read_all_perfis" ON public.perfis
 #iaLog p{margin:0 0 10px;white-space:pre-wrap}
 #iaJanela .rod{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
 #iaJanela .rod input{flex:1;min-width:0}
+#iaJanela.hide{display:none}
 </style>
 
 <button id="iaBtn" type="button" aria-label="Tirar dúvidas com a IA">💬</button>
@@ -384,27 +385,6 @@ function setMode(m){
 $("tEntrar").onclick=function(){setMode("entrar")};
 $("tCriar").onclick=function(){setMode("criar")};
 $("go").onclick=async function(){
-  /* ===== Bolinha: IA teste davilindo ===== */
-$("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
-$("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
-
-var iaHist=[];
-function iaAdd(who,t){
-  $("iaLog").innerHTML+='<p><b>'+esc(who)+':</b> '+esc(t)+'</p>';
-  $("iaLog").scrollTop=1e9;
-}
-async function iaEnviar(){
-  var t=$("iaIn").value.trim();if(!t)return;
-  $("iaIn").value="";iaAdd("Você",t);
-  iaHist.push({role:"user",content:t});
-  try{
-    var d=await chamarIA({acao:"chat",mensagens:iaHist.slice(-20)});
-    iaHist.push({role:"assistant",content:d.resposta});
-    iaAdd("IA",d.resposta);
-  }catch(e){iaAdd("Erro",e.message||"Falha ao falar com a IA")}
-}
-$("iaEnviar").onclick=iaEnviar;
-$("iaIn").onkeydown=function(e){if(e.key==="Enter")iaEnviar()};
   if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.");return}
   var em=$("email").value.trim(), p=$("senha").value, n=$("nome").value.trim(), serie=mode==="criar"?$("serieAcesso").value:"";
   if(!em||!p){msg("Preencha e-mail e senha.");return}
@@ -895,12 +875,15 @@ async function chamarIA(body){
   try{
     r=await fetch(IA_URL,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+tok,"apikey":SUPABASE_KEY},body:JSON.stringify(body)});
   }catch(e){
-    throw new Error("Não consegui conectar à função da IA. Verifique se ela foi publicada com 'supabase functions deploy ia'.");
+    throw new Error("Não consegui conectar à função da IA.");
   }
   var d=await r.json().catch(function(){return {}});
   if(!r.ok)throw new Error(d.error||("Erro da IA ("+r.status+")"));
+  if(body.acao==="flashcards"&&!Array.isArray(d.cards))throw new Error("A IA não devolveu os cards.");
+  if(body.acao!=="flashcards"&&typeof d.resposta!=="string")throw new Error("A IA não devolveu resposta.");
   return d;
 }
+
 function fillFcMaterias(){
   $("fcMateria").innerHTML=SUBJ.map(function(n){return "<option>"+esc(n)+"</option>"}).join("");
 }
@@ -953,6 +936,29 @@ async function marcar(acertou){
   }
   fcIdx=(fcIdx+1)%fcCards.length;fcMostrar=false;carregarFlashcards();
 }
+$("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
+$("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
+
+/* ===== Bolinha: IA teste davilindo ===== */
+var iaHist=[];
+function iaAdd(who,t){
+  $("iaLog").innerHTML+='<p><b>'+esc(who)+':</b> '+esc(t)+'</p>';
+  $("iaLog").scrollTop=1e9;
+}
+async function iaEnviar(){
+  var t=$("iaIn").value.trim();if(!t)return;
+  $("iaIn").value="";iaAdd("Você",t);
+  iaHist.push({role:"user",content:t});
+  try{
+    var d=await chamarIA({acao:"chat",mensagens:iaHist.slice(-20)});
+    iaHist.push({role:"assistant",content:d.resposta});
+    iaAdd("IA",d.resposta);
+  }catch(e){iaAdd("Erro",e.message||"Falha ao falar com a IA")}
+}
+$("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
+$("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
+$("iaEnviar").onclick=iaEnviar;
+$("iaIn").onkeydown=function(e){if(e.key==="Enter")iaEnviar()};
 if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.")}
 else sb.auth.onAuthStateChange(function(ev,session){
   setTimeout(function(){
