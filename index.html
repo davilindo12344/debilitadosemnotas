@@ -14,6 +14,7 @@
 :root{--paper:#f1f4fb;--grid:rgba(44,69,232,.07);--card:#fff;--ink:#141b3a;--mut:#5a6283;--line:#d9dff0;--soft:#e7ebf7;--pen:#2c45e8;--onpen:#fff;--red:#e0383e;--ok:#0c8559;--bad:#cf2f39;--warn:#a85f00;--hl:#ffe14d;--display:"Bricolage Grotesque",system-ui,sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0e1228;--grid:rgba(138,160,255,.07);--card:#171c3a;--ink:#eef0ff;--mut:#9aa3cc;--line:#2a3160;--soft:#1f2548;--pen:#8aa0ff;--onpen:#0e1228;--red:#ff6b70;--ok:#4fd8a1;--bad:#ff7b80;--warn:#ffc15a;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#0e1228;--grid:rgba(138,160,255,.07);--card:#171c3a;--ink:#eef0ff;--mut:#9aa3cc;--line:#2a3160;--soft:#1f2548;--pen:#8aa0ff;--onpen:#0e1228;--red:#ff6b70;--ok:#4fd8a1;--bad:#ff7b80;--warn:#ffc15a;color-scheme:dark}
+:root[data-theme="lightblue"]{--paper:#fff;--grid:rgba(44,69,232,.05);--card:#fff;--ink:#17315f;--mut:#52709d;--line:#bcd0ee;--soft:#edf5ff;--pen:#2563eb;--onpen:#fff;--red:#dc2626;--ok:#15803d;--bad:#b91c1c;--warn:#a16207;--hl:#dbeafe;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
 main{max-width:760px;margin:0 auto;padding:28px 16px 56px}
@@ -149,12 +150,13 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
         <button class="burger" id="burger" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="menu-list hide" id="menuList">
           <button type="button" data-page="notas">Notas</button>
+          <button type="button" data-page="desempenho">Desempenho</button>
           <button type="button" data-page="calendario">Calendário</button>
           <button type="button" data-page="atividades">Atividades semanais</button>
           <button type="button" data-page="conteudos">Conteúdos</button>
           <button type="button" data-page="estudos">Estudos</button>
           <button type="button" data-page="ranking">Ranking</button>
-          <button type="button" data-page="perfil">Perfil</button>
+          <button type="button" data-page="configuracoes">Configurações</button>
           <button type="button" data-page="assinatura">Assinatura</button>
         </div>
       </div>
@@ -162,6 +164,8 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
     </div>
     <button class="ghost" id="logout" type="button">Sair</button>
   </div>
+
+  <div id="page-desempenho" class="panel hide"><div class="card"><h2>Desempenho</h2><label for="desempenhoMateria">Escolha a matéria</label><select id="desempenhoMateria"></select><div id="desempenhoGrafico" style="display:flex;align-items:flex-end;justify-content:center;gap:28px;height:230px;margin-top:24px"></div><div id="desempenhoMsg" class="msg"></div></div></div>
 
   <div id="page-notas" class="panel">
     <div class="card"><h2>Ano letivo</h2><p style="margin:4px 0 6px">Você está no <b id="anoAtual" data-testid="ano-atual"></b></p><small>Para mudar o ano letivo, vá até a aba Perfil.</small></div>
@@ -217,6 +221,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
 
   <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button><div class="msg" id="assinaturaStatus" style="margin-top:12px"></div><div id="assinaturaAdmin" class="hide" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)"><h3>Administração</h3><input id="liberarEmail" type="email" placeholder="E-mail do assinante"><input id="liberarData" type="date" style="margin-top:8px"><button type="button" id="liberarAssinatura" style="margin-top:8px">Liberar assinatura</button><button type="button" id="revogarAssinatura" class="ghost" style="margin-top:8px">Retirar assinatura</button><div class="msg" id="liberarMsg"></div></div></div></div>
 </section>
+  <div id="page-configuracoes" class="panel hide"><div class="card"><h2>Configurações</h2><button type="button" data-config="perfil" style="display:block;width:100%;text-align:left;margin-bottom:8px">👤 Perfil</button><button type="button" data-config="representantes" style="display:block;width:100%;text-align:left;margin-bottom:8px">👥 Representantes da turma</button><button type="button" data-config="temas" style="display:block;width:100%;text-align:left">🎨 Temas</button><div id="configTemaBox" class="hide" style="margin-top:14px"><label for="temaSelect">Escolha um tema</label><select id="temaSelect"><option value="blue">Azul</option><option value="lightblue">Branco com detalhes azuis</option><option value="dark">Escuro</option></select></div><div class="msg" id="configMsg"></div></div></div>
 </main>
 
 <!-- Modal SQL Setup -->
@@ -582,17 +587,40 @@ function showLogin(){
 function closeMenu(){$("menuList").classList.add("hide");$("burger").setAttribute("aria-expanded","false")}
 $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classList.toggle("hide");this.setAttribute("aria-expanded",h?"false":"true")};
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
-var PAGES=["notas","calendario","atividades","conteudos","estudos","ranking","perfil","assinatura"];
+var PAGES=["notas","desempenho","calendario","atividades","conteudos","estudos","ranking","configuracoes","assinatura"];
 function showPage(name){
   PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
   closeMenu();
   if(name==="estudos"){fillFcMaterias();carregarFlashcards();mostrarEstudo("flash")}
   if(name==="ranking")loadRank();
+  if(name==="desempenho")renderDesempenho();
   if(name==="assinatura"){loadVotacao();loadAssinatura();}
 }
 Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
+Array.prototype.forEach.call(document.querySelectorAll("[data-config]"),function(b){b.onclick=function(){
+  var alvo=b.dataset.config;
+  if(alvo==="perfil"){showPage("perfil");return}
+  if(alvo==="representantes"){showPage("perfil");setTimeout(function(){$("repPanel").scrollIntoView({behavior:"smooth",block:"start"})},0);return}
+  $("configTemaBox").classList.toggle("hide");
+}});
+function aplicarTema(t){
+  document.documentElement.setAttribute("data-theme",t==="blue"?"light":t);
+  localStorage.setItem("tema-site",t);
+  if($("temaSelect"))$("temaSelect").value=t;
+}
+aplicarTema(localStorage.getItem("tema-site")||"blue");
+$("temaSelect").onchange=function(){aplicarTema(this.value)};
 Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
+function renderDesempenho(){
+  var sel=$("desempenhoMateria"),materias=subjectsFor(store.ano),atual=sel.value||st.sel;
+  sel.innerHTML=materias.map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+"</option>"}).join("");
+  sel.value=materias.indexOf(atual)>=0?atual:materias[0];
+  sel.onchange=renderDesempenho;
+  var o=A(st.sub[sel.value],bonus(),sel.value),graf=$("desempenhoGrafico");
+  graf.innerHTML=o.T.map(function(v,i){var val=Math.max(0,Math.min(10,Number(v)||0));return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:64px"><b>'+f(v)+'</b><div style="height:170px;width:42px;border-radius:8px 8px 0 0;background:var(--soft);display:flex;align-items:flex-end"><div style="height:'+(val*10)+'%;width:100%;background:var(--pen);border-radius:8px 8px 0 0"></div></div><b>'+(i+1)+'º tri</b></div>'}).join("");
+  $("desempenhoMsg").textContent="Médias de "+sel.value+" nos três trimestres.";
+}
 
 async function loadVotacao(){
   var msgEl=$("votoMsg"),out=$("votoResultado");
@@ -710,6 +738,12 @@ function p2(n){return n<10?"0"+n:""+n}
 function isoD(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())}
 function mondayOf(off){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+off*7);return d}
 function nkey(x){return String(x||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function atividadeConcluida(id){return localStorage.getItem("atividade:"+uid+":"+id)==="1"}
+function alternarAtividade(id){
+  var chave="atividade:"+uid+":"+id;
+  if(atividadeConcluida(id))localStorage.removeItem(chave);else localStorage.setItem(chave,"1");
+  renderShared();
+}
 function renderShared(){
   $("eventosLista").innerHTML=ofKind("evento").map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.event_date||"Data a definir")+' · '+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small>'+btns(x,"evento")+'</div>'}).join("")||'<small>Nenhuma prova cadastrada.</small>';
   var cts=ofKind("conteudo"),subjOpts=subjectsFor(mySerie()).slice();
@@ -720,10 +754,11 @@ function renderShared(){
   var mon=mondayOf(weekOff),DN=["Seg","Ter","Qua","Qui","Sex"],acts=ofKind("atividade"),h='<table class="wk"><thead><tr><th>Dia</th><th>Atividades</th></tr></thead><tbody>';
   for(var i=0;i<5;i++){
     var d=new Date(mon);d.setDate(mon.getDate()+i);var k=isoD(d);
-    var list=acts.filter(function(x){return x.event_date===k}).map(function(x){return '<div class="act"><b>'+esc(x.subject||"")+'</b>'+(x.subject?' · ':'')+esc(x.title)+(x.description?'<br><small>'+esc(x.description)+'</small>':'')+btns(x,"atividade")+'</div>'}).join("")||'<small>—</small>';
+    var list=acts.filter(function(x){return x.event_date===k}).map(function(x){var done=atividadeConcluida(x.id);return '<div class="act" style="opacity:'+(done?'.65':'1')+'"><b style="text-decoration:'+(done?'line-through':'none')+'">'+esc(x.subject||"")+'</b>'+(x.subject?' · ':'')+'<span style="text-decoration:'+(done?'line-through':'none')+'">'+esc(x.title)+'</span>'+(x.description?'<br><small>'+esc(x.description)+'</small>':'')+'<br><button type="button" class="ghost" data-done="'+esc(x.id)+'">'+(done?'↩️ Marcar como pendente':'✅ Marcar como concluída')+'</button>'+btns(x,"atividade")+'</div>'}).join("")||'<small>—</small>';
     h+='<tr><td class="d">'+DN[i]+'<br><small>'+p2(d.getDate())+'/'+p2(d.getMonth()+1)+'</small></td><td>'+list+'</td></tr>';
   }
   $("atTabela").innerHTML=h+'</tbody></table>';
+  Array.prototype.forEach.call(document.querySelectorAll("[data-done]"),function(b){b.onclick=function(){alternarAtividade(b.dataset.done)}});
   var fri=new Date(mon);fri.setDate(mon.getDate()+4);
   $("wkLabel").textContent=p2(mon.getDate())+"/"+p2(mon.getMonth()+1)+" – "+p2(fri.getDate())+"/"+p2(fri.getMonth()+1);
   Array.prototype.forEach.call(document.querySelectorAll("[data-del]"),function(b){b.onclick=async function(){
