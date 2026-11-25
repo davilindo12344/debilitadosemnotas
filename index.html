@@ -256,6 +256,7 @@ CREATE POLICY "read_all_perfis" ON public.perfis
 #iaBtn{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;padding:0;background:var(--pen);color:var(--onpen);border:0;font-size:1.6rem;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:50;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #iaJanela{position:fixed;right:18px;bottom:88px;width:min(360px,calc(100vw - 36px));height:min(480px,60vh);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:50;display:flex;flex-direction:column;overflow:hidden}
 #iaJanela .cab{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
+#iaJanela .iaLimite{display:block;margin-top:2px;font-size:.68rem;font-weight:400;color:var(--mut)}
 #iaJanela .cab button{padding:4px 10px;font-size:.85rem}
 #iaLog{flex:1;overflow:auto;padding:12px 14px;font-size:.92rem}
 #iaLog p{margin:0 0 10px;white-space:pre-wrap}
@@ -267,7 +268,7 @@ CREATE POLICY "read_all_perfis" ON public.perfis
 <button id="iaBtn" type="button" aria-label="Tirar dúvidas com a IA">💬</button>
 
 <div id="iaJanela" class="hide">
-  <div class="cab"><span>IA teste davilindo</span><button class="ghost" id="iaFechar" type="button">Fechar</button></div>
+  <div class="cab"><div><span>IA teste davilindo</span><small class="iaLimite">Limite: 8.000 tokens/min · renovação a cada minuto</small></div><button class="ghost" id="iaFechar" type="button">Fechar</button></div>
   <div id="iaLog"><p><b>IA:</b> Oi! Sou a IA teste davilindo. Pode me perguntar sobre o site ou sobre a matéria.</p></div>
   <div class="rod">
     <input type="text" id="iaIn" placeholder="Pergunte sobre o site ou a matéria...">
