@@ -914,27 +914,106 @@ async function carregarFlashcards(){
   fcCards=r.data||[];fcIdx=0;fcMostrar=false;renderFc();
 }
 function renderFc(){
+ function renderFc(){
   var box=$("fcEstudo");
-  if(!fcCards.length){box.innerHTML="<small>Nenhum flashcard ainda. Gere um acima.</small>";return}
+
+  if(!fcCards.length){
+    box.innerHTML="<small>Nenhum flashcard ainda. Gere um acima.</small>";
+    return;
+  }
+
   var c=fcCards[fcIdx];
-  box.innerHTML='<small>'+esc(c.materia)+' · '+esc(c.dificuldade)+' · '+(fcIdx+1)+'/'+fcCards.length+'</small>'+
-    '<div class="item"><h3>'+esc(c.pergunta)+'</h3>'+
-    (fcMostrar?'<p><b>Resposta:</b> '+esc(c.resposta)+'</p><div class="item-actions"><button type="button" id="fcAcerto">Acertei</button><button type="button" class="ghost" id="fcErro">Errei</button></div>':'<button type="button" id="fcVer">Ver resposta</button>')+
-    '</div>';
-  if($("fcVer"))$("fcVer").onclick=function(){fcMostrar=true;renderFc()};
-  if($("fcAcerto"))$("fcAcerto").onclick=function(){marcar(true)};
-  if($("fcErro"))$("fcErro").onclick=function(){marcar(false)};
+  var acertos=fcCards.reduce(function(total,card){
+    return total+(card.acertos||0);
+  },0);
+
+  var erros=fcCards.reduce(function(total,card){
+    return total+(card.erros||0);
+  },0);
+
+  box.innerHTML=
+    '<small>'+esc(c.materia)+' · '+esc(c.dificuldade)+' · '+(fcIdx+1)+'/'+fcCards.length+'</small>'+
+    '<div class="item">'+
+      '<h3>'+esc(c.pergunta)+'</h3>'+
+      (
+        fcMostrar
+        ?
+        '<p><b>Resposta:</b> '+esc(c.resposta)+'</p>'+
+        '<p><b>Explicação:</b> '+esc(c.explicacao||"")+'</p>'+
+        '<div class="item-actions">'+
+          '<button type="button" id="fcAcerto">Acertei</button>'+
+          '<button type="button" class="ghost" id="fcErro">Errei</button>'+
+        '</div>'
+        :
+        '<button type="button" id="fcVer">Ver resposta</button>'
+      )+
+    '</div>'+
+    '<h3>Resumo dos flashcards</h3>'+
+    '<table style="width:100%;border-collapse:collapse;text-align:center">'+
+      '<tr>'+
+        '<th style="padding:8px;border:1px solid var(--line)">Acertos</th>'+
+        '<th style="padding:8px;border:1px solid var(--line)">Erros</th>'+
+      '</tr>'+
+      '<tr>'+
+        '<td style="padding:8px;border:1px solid var(--line);color:#15803d"><b>'+acertos+'</b></td>'+
+        '<td style="padding:8px;border:1px solid var(--line);color:#b91c1c"><b>'+erros+'</b></td>'+
+      '</tr>'+
+    '</table>';
+
+  if($("fcVer")){
+    $("fcVer").onclick=function(){
+      fcMostrar=true;
+      renderFc();
+    };
+  }
+
+  if($("fcAcerto")){
+    $("fcAcerto").onclick=function(){
+      marcar(true);
+    };
+  }
+
+  if($("fcErro")){
+    $("fcErro").onclick=function(){
+      marcar(false);
+    };
+  }
+}
 }
 async function marcar(acertou){
+async function marcar(acertou){
   var c=fcCards[fcIdx];
-  await sb.from("flashcards").update(acertou?{acertos:c.acertos+1}:{erros:c.erros+1}).eq("id",c.id);
-  if(!acertou){
-    try{
-      var d=await chamarIA({acao:"explicar_erro",pergunta:c.pergunta,resposta_dada:"(errou)",resposta_certa:c.resposta});
-      alert(d.resposta);
-    }catch(e){alert(c.resposta)}
+
+  var atualizacao=acertou
+    ? {acertos:(c.acertos||0)+1}
+    : {erros:(c.erros||0)+1};
+
+  var r=await sb
+    .from("flashcards")
+    .update(atualizacao)
+    .eq("id",c.id);
+
+  if(r.error){
+    alert(r.error.message);
+    return;
   }
-  fcIdx=(fcIdx+1)%fcCards.length;fcMostrar=false;carregarFlashcards();
+
+  if(acertou){
+    c.acertos=(c.acertos||0)+1;
+  }else{
+    c.erros=(c.erros||0)+1;
+  }
+
+  fcMostrar=false;
+
+  if(fcIdx<fcCards.length-1){
+    fcIdx++;
+  }else{
+    fcIdx=0;
+  }
+
+  renderFc();
+}
 }
 $("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
 $("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
