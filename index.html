@@ -215,7 +215,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
   </div>
 </div>
 
-  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button></div></div>
+  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button><div class="msg" id="assinaturaStatus" style="margin-top:12px"></div></div></div>
 </section>
 </main>
 
@@ -586,7 +586,7 @@ function showPage(name){
   closeMenu();
   if(name==="estudos"){fillFcMaterias();carregarFlashcards();mostrarEstudo("flash")}
   if(name==="ranking")loadRank();
-  if(name==="assinatura")loadVotacao();
+  if(name==="assinatura"){loadVotacao();loadAssinatura();}
 }
 Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
 Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
@@ -608,6 +608,15 @@ async function votarAssinatura(voto){
   var r=await sb.from("votos_assinatura").insert({user_id:uid,voto:voto});
   if(r.error){msgEl.textContent="Não foi possível salvar seu voto: "+r.error.message;return}
   loadVotacao();
+}
+async function loadAssinatura(){
+  var el=$("assinaturaStatus");
+  el.className="msg";el.textContent="Verificando sua assinatura...";
+  var r=await sb.from("assinaturas").select("pago_em,liberado").eq("user_id",uid).maybeSingle();
+  if(r.error){el.textContent="A assinatura ainda não foi configurada.";return}
+  if(!r.data||!r.data.liberado){el.textContent="Assinatura não liberada. Após o pagamento, aguarde a liberação manual.";return}
+  var data=r.data.pago_em?new Date(r.data.pago_em+"T00:00:00").toLocaleDateString("pt-BR"):"não informada";
+  el.textContent="Assinatura liberada. Pagamento registrado em "+data+".";el.className="msg ok";
 }
 $("votoSim").onclick=function(){votarAssinatura(true)};
 $("votoNao").onclick=function(){votarAssinatura(false)};
