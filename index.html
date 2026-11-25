@@ -215,7 +215,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
   </div>
 </div>
 
-  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>Você apoiaria uma assinatura de <b>R$ 1 por mês</b> para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura pelo WhatsApp</button></div></div>
+  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button></div></div>
 </section>
 </main>
 
@@ -613,7 +613,7 @@ $("votoSim").onclick=function(){votarAssinatura(true)};
 $("votoNao").onclick=function(){votarAssinatura(false)};
 $("assinarWhatsapp").onclick=function(){
   var meta=(userObj&&userObj.user_metadata)||{},nome=meta.name||user||"não informado",email=(userObj&&userObj.email)||"não informado";
-  var texto="Oi, sou "+nome+", com "+email+", quero pagar a assinatura mensal";
+  var texto="Oi, sou "+nome+", com "+email+", quero pagar a assinatura mensal de R$ 1,00 por mês";
   window.open("https://wa.me/5583988674203?text="+encodeURIComponent(texto),"_blank");
 };
 
