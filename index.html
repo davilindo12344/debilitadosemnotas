@@ -329,7 +329,7 @@ function normSerie(s){
 }
 function mySerie(){var s=userObj&&userObj.user_metadata&&userObj.user_metadata.serie;return SERIES.indexOf(s)>=0?s:SERIES[0]}
 function isRepAdmin(){
-  var meta=(userObj&&userObj.user_metadata)||{},email=(userObj&&userObj.email)||meta.email||user||"";
+  var email=(userObj&&userObj.email)||"";
   return String(email).trim().toLowerCase()===REPRESENTANTE_ADMIN;
 }
 function mySeries(){
@@ -531,7 +531,7 @@ function renderReps(){
   $("repLista").innerHTML=ms.map(function(sr){
     var list=repRows.filter(function(x){return x.serie===sr});
     var h='<div class="item" data-testid="rep-turma"><h3>'+esc(sr)+'</h3>';
-    h+=list.map(function(x){var me=x.email.toLowerCase()===em,displayEmail=(!admin&&x.email.toLowerCase()===REPRESENTANTE_ADMIN)?"davi(criador)":x.email;return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-email">'+esc(displayEmail)+(me?' <small>(você)</small>':'')+'</span>'+(admin?'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>':'')+'</div>'}).join("");
+    h+=list.map(function(x){var me=x.email.toLowerCase()===em,displayName=admin?(x.nome||"Representante")+" · "+x.email:(x.nome||"Representante");return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-name">'+esc(displayName)+(me?' <small>(você)</small>':'')+'</span>'+(admin?'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>':'')+'</div>'}).join("");
     if(admin&&list.length<3)h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input type="email" placeholder="E-mail do representante" data-repin="'+esc(sr)+'" data-testid="rep-email-input" style="flex:1;min-width:200px"><button type="button" data-repadd="'+esc(sr)+'" data-testid="rep-add-btn">Adicionar</button></div>';
     return h+'</div>';
   }).join("");
