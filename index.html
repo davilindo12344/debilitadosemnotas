@@ -1098,7 +1098,7 @@ async function iaEnviar(){
   $("iaIn").value="";iaAdd("Você",t);
   iaHist.push({role:"user",content:t});
   try{
-    var d=await chamarIA({acao:"chat",mensagens:iaHist.slice(-20)});
+    var d=await chamarIA({acao:"chat",mensagens:iaHist.slice(-20),notas:store});
     iaHist.push({role:"assistant",content:d.resposta});
     iaAdd("IA",d.resposta);
   }catch(e){iaAdd("Erro",e.message||"Falha ao falar com a IA")}
