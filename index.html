@@ -959,7 +959,6 @@ await carregarFlashcards();
 /* estudo */
 var fcCards=[],fcIdx=0,fcMostrar=false;
 async function carregarFlashcards(){
- async function carregarFlashcards(){
   var box=$("fcEstudo");
 
   var r=await sb
@@ -982,9 +981,7 @@ async function carregarFlashcards(){
   fcMostrar=false;
   renderFc();
 }
-}
 function renderFc(){
- function renderFc(){
   var box=$("fcEstudo");
 
   if(!fcCards.length){
@@ -1081,7 +1078,6 @@ async function marcar(acertou){
   }
 
   renderFc();
-}
 }
 $("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
 $("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
