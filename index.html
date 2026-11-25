@@ -215,7 +215,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
   </div>
 </div>
 
-  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button><div class="msg" id="assinaturaStatus" style="margin-top:12px"></div><div id="assinaturaAdmin" class="hide" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)"><h3>Administração</h3><input id="liberarEmail" type="email" placeholder="E-mail do assinante"><input id="liberarData" type="date" style="margin-top:8px"><button type="button" id="liberarAssinatura" style="margin-top:8px">Liberar assinatura</button><div class="msg" id="liberarMsg"></div></div></div></div>
+  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>O valor seria de <b>R$ 1,00 por mês</b>. Você apoiaria essa assinatura para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div><hr><p>Assinatura mensal: <b>R$ 1,00 por mês</b>. Se quiser pagar manualmente, fale comigo pelo WhatsApp:</p><button type="button" id="assinarWhatsapp">Quero pagar a assinatura de R$ 1,00/mês pelo WhatsApp</button><div class="msg" id="assinaturaStatus" style="margin-top:12px"></div><div id="assinaturaAdmin" class="hide" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)"><h3>Administração</h3><input id="liberarEmail" type="email" placeholder="E-mail do assinante"><input id="liberarData" type="date" style="margin-top:8px"><button type="button" id="liberarAssinatura" style="margin-top:8px">Liberar assinatura</button><button type="button" id="revogarAssinatura" class="ghost" style="margin-top:8px">Retirar assinatura</button><div class="msg" id="liberarMsg"></div></div></div></div>
 </section>
 </main>
 
@@ -611,6 +611,9 @@ async function votarAssinatura(voto){
 }
 async function loadAssinatura(){
   var el=$("assinaturaStatus");
+  var aviso=$("assinaturaAviso");
+  if(!aviso){aviso=document.createElement("div");aviso.id="assinaturaAviso";aviso.className="msg";el.parentNode.insertBefore(aviso,$("assinaturaAdmin"))}
+  aviso.textContent="";
   var admin=isRepAdmin();
   $("assinaturaAdmin").classList.toggle("hide",!admin);
   if(admin){el.textContent="Sua conta está liberada como administradora.";el.className="msg ok";return}
@@ -620,6 +623,14 @@ async function loadAssinatura(){
   if(!r.data||!r.data.liberado){el.textContent="Assinatura não liberada. Após o pagamento, aguarde a liberação manual.";return}
   var data=r.data.pago_em?new Date(r.data.pago_em+"T00:00:00").toLocaleDateString("pt-BR"):"não informada";
   el.textContent="Assinatura liberada. Pagamento registrado em "+data+".";el.className="msg ok";
+  if(r.data.pago_em){
+    var pago=new Date(r.data.pago_em+"T00:00:00"),hoje=new Date(),dia=pago.getDate();
+    var prox=new Date(hoje.getFullYear(),hoje.getMonth(),1);
+    if(hoje.getDate()>=dia)prox.setMonth(prox.getMonth()+1);
+    var ultimo=new Date(prox.getFullYear(),prox.getMonth()+1,0).getDate();
+    prox.setDate(Math.min(dia,ultimo));
+    if(hoje>=prox){aviso.textContent="⚠️ Chegou o dia da renovação mensal. Entre em contato para pagar R$ 1,00 e aguarde a liberação.";aviso.className="msg"}
+  }
 }
 async function liberarAssinatura(){
   var email=$("liberarEmail").value.trim().toLowerCase(),data=$("liberarData").value||new Date().toISOString().slice(0,10),msgEl=$("liberarMsg");
@@ -630,6 +641,15 @@ async function liberarAssinatura(){
   msgEl.textContent="Assinatura liberada com sucesso.";msgEl.className="msg ok";
   $("liberarEmail").value="";
 }
+async function revogarAssinatura(){
+  var email=$("liberarEmail").value.trim().toLowerCase(),msgEl=$("liberarMsg");
+  if(!email){msgEl.textContent="Informe o e-mail do assinante.";return}
+  if(!confirm("Retirar a assinatura de "+email+"? A data do pagamento será mantida."))return;
+  msgEl.className="msg";msgEl.textContent="Retirando...";
+  var r=await sb.rpc("revogar_assinatura_por_email",{p_email:email});
+  if(r.error){msgEl.textContent="Erro: "+r.error.message;return}
+  msgEl.textContent="Assinatura retirada. A data do pagamento foi mantida.";msgEl.className="msg ok";
+}
 $("votoSim").onclick=function(){votarAssinatura(true)};
 $("votoNao").onclick=function(){votarAssinatura(false)};
 $("assinarWhatsapp").onclick=function(){
@@ -638,6 +658,7 @@ $("assinarWhatsapp").onclick=function(){
   window.open("https://wa.me/5583988674203?text="+encodeURIComponent(texto),"_blank");
 };
 $("liberarAssinatura").onclick=liberarAssinatura;
+$("revogarAssinatura").onclick=revogarAssinatura;
 
 /* perfil */
 $("perfilFoto").onchange=function(){
