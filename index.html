@@ -292,22 +292,24 @@ var mode="entrar", user=null, uid=null, timer=null, activeTri=0, sharedItems=[],
 var repRows=null, ctFiltro="";
 var editing={evento:null,conteudo:null,atividade:null};
 var SUBJ=["Inglês","Matemática","Filosofia","Gramática","Biologia","Geografia","Literatura","Química","Física","Redação","Sociologia","Educação Física","História"];
+var SUBJ_9ANO=["Filosofia","Geometria e Álgebra","Biologia","Literatura","Geografia","História","Física","Redação","Química","Educação Física"];
+function subjectsFor(serie){return serie==="9º ano"?SUBJ_9ANO:SUBJ}
 var $=function(i){return document.getElementById(i)};
 function newSub(){return{g:[[null,null,null],[null,null,null],[null,null,null]],r:[null,null,null]}}
-function def(){var o={need:21,s:{on:false,max:3},sel:SUBJ[0],sub:{}};SUBJ.forEach(function(n){o.sub[n]=newSub()});return o}
-function norm(d){
-  var o=def();
+function def(serie){var subjects=subjectsFor(serie),o={need:21,s:{on:false,max:3},sel:subjects[0],sub:{}};subjects.forEach(function(n){o.sub[n]=newSub()});return o}
+function norm(d,serie){
+  var subjects=subjectsFor(serie),o=def(serie);
   if(!d)return o;
   if(d.s&&d.s.max!=null)o.s={on:!!d.s.on,max:d.s.max};
-  if(d.sub){SUBJ.forEach(function(n){if(d.sub[n]){o.sub[n]=d.sub[n];if(!o.sub[n].r)o.sub[n].r=[null,null,null]}});if(d.sel&&o.sub[d.sel])o.sel=d.sel}
-  else if(d.g){o.sub[SUBJ[0]].g=d.g}
+  if(d.sub){subjects.forEach(function(n){if(d.sub[n]){o.sub[n]=d.sub[n];if(!o.sub[n].r)o.sub[n].r=[null,null,null]}});if(d.sel&&o.sub[d.sel])o.sel=d.sel}
+  else if(d.g){o.sub[subjects[0]].g=d.g}
   return o;
 }
 function normStore(d,serie){
   var o={ano:serie,anos:{}};
-  SERIES.forEach(function(s){o.anos[s]=def()});
-  if(d&&d.anos){SERIES.forEach(function(s){if(d.anos[s])o.anos[s]=norm(d.anos[s])});if(d.ano&&o.anos[d.ano])o.ano=d.ano}
-  else if(d){o.anos[serie]=norm(d)}
+  SERIES.forEach(function(s){o.anos[s]=def(s)});
+  if(d&&d.anos){SERIES.forEach(function(s){if(d.anos[s])o.anos[s]=norm(d.anos[s],s)});if(d.ano&&o.anos[d.ano])o.ano=d.ano}
+  else if(d){o.anos[serie]=norm(d,serie)}
   return o;
 }
 var store=normStore(null,SERIES[0]), st=store.anos[store.ano];
@@ -348,9 +350,9 @@ function tr(m){
 }
 
 /* média geral do ano (usada só para ordenar o ranking; nunca é exibida) */
-function mediaAno(y){
+function mediaAno(y,serie){
   var save=st;st=y;var tot=0,n=0;
-  SUBJ.forEach(function(nm){
+  subjectsFor(serie||store.ano).forEach(function(nm){
     var d=y.sub[nm],has=[false,false,false],t;
     for(t=0;t<3;t++){d.g[t].forEach(function(v){if(v!=null)has[t]=true});if(d.r[t]!=null)has[t]=true}
     if(!has[0]&&!has[1]&&!has[2])return;
@@ -369,7 +371,7 @@ function persist(){
     var r=await sb.from("notas").upsert({user_id:uid,dados:store,updated_at:new Date().toISOString()});
     $("sync").textContent=r.error?"⚠️ erro ao salvar":"☁️ salvo";
     var sr=mySerie();
-    await sb.from("perfis").upsert({user_id:uid,nome:user,serie:sr,media:mediaAno(store.anos[sr]),updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    await sb.from("perfis").upsert({user_id:uid,nome:user,serie:sr,media:mediaAno(store.anos[sr],sr),updated_at:new Date().toISOString()},{onConflict:"user_id"});
   },500);
 }
 function setMode(m){
@@ -608,7 +610,7 @@ $("salvarPerfil").onclick=async function(){
   var r=await sb.auth.updateUser({data:{name:nm,serie:sr}});
   if(r.error){pm.textContent=r.error.message;return}
   user=nm;userObj=r.data.user;
-  var r2=await sb.from("perfis").upsert({user_id:uid,nome:nm,apelido:ap,foto:tmpFoto||null,serie:sr,media:mediaAno(store.anos[sr]),updated_at:new Date().toISOString()},{onConflict:"user_id"});
+  var r2=await sb.from("perfis").upsert({user_id:uid,nome:nm,apelido:ap,foto:tmpFoto||null,serie:sr,media:mediaAno(store.anos[sr],sr),updated_at:new Date().toISOString()},{onConflict:"user_id"});
   if(r2.error){if(r2.error.message&&r2.error.message.indexOf("schema cache")>=0){showSqlModal()}pm.textContent="Erro ao salvar perfil: "+r2.error.message;return}
   prof={apelido:ap,foto:tmpFoto};
   if(store.ano!==sr){store.ano=sr;st=store.anos[sr];$("sOn").checked=st.s.on;persist();build();render()}
@@ -632,7 +634,7 @@ function mondayOf(off){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate(
 function nkey(x){return String(x||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
 function renderShared(){
   $("eventosLista").innerHTML=ofKind("evento").map(function(x){return '<div class="item"><h3>'+esc(x.title)+'</h3><small>'+esc(x.event_date||"Data a definir")+' · '+esc(x.subject||"")+(x.series?' · '+esc(x.series):'')+'</small>'+btns(x,"evento")+'</div>'}).join("")||'<small>Nenhuma prova cadastrada.</small>';
-  var cts=ofKind("conteudo"),subjOpts=SUBJ.slice();
+  var cts=ofKind("conteudo"),subjOpts=subjectsFor(mySerie()).slice();
   cts.forEach(function(x){var t=(x.subject||"").trim();if(t&&!subjOpts.some(function(n){return nkey(n)===nkey(t)}))subjOpts.push(t)});
   if(ctFiltro&&!subjOpts.some(function(n){return nkey(n)===ctFiltro}))ctFiltro="";
   $("ctFiltro").innerHTML='<option value="">Todas as matérias</option>'+subjOpts.map(function(n){var k=nkey(n),c=cts.filter(function(x){return nkey(x.subject)===k}).length;return '<option value="'+esc(k)+'"'+(k===ctFiltro?' selected':'')+'>'+esc(n)+(c?' ('+c+')':'')+'</option>'}).join("");
@@ -690,7 +692,7 @@ $("addEvento").onclick=function(){publishShared("evento")};
 $("addConteudo").onclick=function(){publishShared("conteudo")};
 $("addAtividade").onclick=function(){publishShared("atividade")};
 $("ctFiltro").onchange=function(){ctFiltro=this.value;renderShared()};
-$("subjList").innerHTML=SUBJ.map(function(n){return '<option value="'+esc(n)+'">'}).join("");
+$("subjList").innerHTML=subjectsFor(mySerie()).map(function(n){return '<option value="'+esc(n)+'">'}).join("");
 $("wkPrev").onclick=function(){weekOff--;renderShared()};
 $("wkNext").onclick=function(){weekOff++;renderShared()};
 
@@ -757,7 +759,7 @@ async function loadRank(){
   if(!rankSerie)rankSerie=mySerie();
   $("rkTabs").innerHTML=SERIES.map(function(s){return '<button type="button" class="'+(s===rankSerie?'':'ghost')+'" data-rk="'+esc(s)+'">'+esc(s)+'</button>'}).join("");
   Array.prototype.forEach.call(document.querySelectorAll("[data-rk]"),function(b){b.onclick=function(){rankSerie=b.dataset.rk;loadRank()}});
-  $("rkSubjectSelect").innerHTML='<option value="__all__">Todas as matérias</option>'+SUBJ.map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>'}).join("");
+  $("rkSubjectSelect").innerHTML='<option value="__all__">Todas as matérias</option>'+subjectsFor(rankSerie).map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>'}).join("");
   $("rkSubjectSelect").value=rankSubject;
   $("rkSubjectSelect").onchange=function(){rankSubject=this.value;loadRank()};
   $("rkMsg").textContent="";$("rkLista").innerHTML='<small style="color:var(--mut)">Carregando...</small>';
@@ -870,7 +872,7 @@ function renderAnos(){
 function render(){
   renderAnos();
   var h="";
-  SUBJ.forEach(function(n){
+  subjectsFor(store.ano).forEach(function(n){
     var o=A(st.sub[n],bonus(),n), s=short(o);
     h+='<button type="button" class="sb'+(n===st.sel?' sel':'')+'" data-n="'+n+'">'+s[0]+' '+n+'<small>'+f(o.total)+' pts · '+s[1]+'</small></button>';
   });
@@ -933,7 +935,7 @@ async function chamarIA(body){
 }
 
 function fillFcMaterias(){
-  $("fcMateria").innerHTML=SUBJ.map(function(n){return "<option>"+esc(n)+"</option>"}).join("");
+  $("fcMateria").innerHTML=subjectsFor(mySerie()).map(function(n){return "<option>"+esc(n)+"</option>"}).join("");
 }
 
 /* abas dentro de Estudos */
