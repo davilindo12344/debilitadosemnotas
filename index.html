@@ -149,13 +149,13 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
         <button class="burger" id="burger" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="menu-list hide" id="menuList">
           <button type="button" data-page="notas">Notas</button>
-          <button type="button" data-page="perfil">Perfil</button>
           <button type="button" data-page="calendario">Calendário</button>
-          <button type="button" data-page="conteudos">Conteúdos</button>
           <button type="button" data-page="atividades">Atividades semanais</button>
-          <button type="button" data-page="ranking">Ranking</button>
-          <button type="button" data-page="conversao">Conversão do simulado</button>
+          <button type="button" data-page="conteudos">Conteúdos</button>
           <button type="button" data-page="estudos">Estudos</button>
+          <button type="button" data-page="ranking">Ranking</button>
+          <button type="button" data-page="perfil">Perfil</button>
+          <button type="button" data-page="assinatura">Assinatura</button>
         </div>
       </div>
       <span class="who-wrap"><span id="barAv"></span><span><span class="who" id="who"></span> <small id="sync"></small></span></span>
@@ -214,6 +214,8 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
     </div>
   </div>
 </div>
+
+  <div id="page-assinatura" class="panel hide"><div class="card"><h2>Assinatura</h2><p>Você apoiaria uma assinatura de <b>R$ 1 por mês</b> para, no futuro, criar o aplicativo na Play Store (Android) e deixar o site mais fluido e com um design melhor ao longo do tempo?</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="votoSim">Sim</button><button type="button" class="ghost" id="votoNao">Não</button></div><div class="msg" id="votoMsg"></div><div id="votoResultado" style="margin-top:12px"></div></div></div>
 </section>
 </main>
 
@@ -577,16 +579,38 @@ function showLogin(){
 function closeMenu(){$("menuList").classList.add("hide");$("burger").setAttribute("aria-expanded","false")}
 $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classList.toggle("hide");this.setAttribute("aria-expanded",h?"false":"true")};
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
-var PAGES=["notas","perfil","calendario","conteudos","atividades","ranking","conversao","estudos"];
+var PAGES=["notas","calendario","atividades","conteudos","estudos","ranking","perfil","assinatura"];
 function showPage(name){
   PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
   closeMenu();
   if(name==="estudos"){fillFcMaterias();carregarFlashcards();mostrarEstudo("flash")}
   if(name==="ranking")loadRank();
+  if(name==="assinatura")loadVotacao();
 }
 Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
 Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
+
+async function loadVotacao(){
+  var msgEl=$("votoMsg"),out=$("votoResultado");
+  msgEl.className="msg";msgEl.textContent="Carregando...";out.innerHTML="";
+  var r=await sb.from("votos_assinatura").select("user_id,voto");
+  if(r.error){msgEl.textContent="Configure a tabela de votação no Supabase.";return}
+  var rows=r.data||[],me=rows.find(function(x){return x.user_id===uid});
+  $("votoSim").disabled=!!me;$("votoNao").disabled=!!me;
+  if(me){msgEl.textContent="Seu voto já foi registrado: "+(me.voto?"Sim":"Não")+".";msgEl.className="msg ok"}
+  else msgEl.textContent="Você pode votar uma vez.";
+  var sim=rows.filter(function(x){return x.voto===true}).length,nao=rows.length-sim;
+  out.innerHTML="<b>Resultado parcial:</b> Sim: "+sim+" · Não: "+nao;
+}
+async function votarAssinatura(voto){
+  var msgEl=$("votoMsg");msgEl.className="msg";msgEl.textContent="Salvando...";
+  var r=await sb.from("votos_assinatura").insert({user_id:uid,voto:voto});
+  if(r.error){msgEl.textContent="Não foi possível salvar seu voto: "+r.error.message;return}
+  loadVotacao();
+}
+$("votoSim").onclick=function(){votarAssinatura(true)};
+$("votoNao").onclick=function(){votarAssinatura(false)};
 
 /* perfil */
 $("perfilFoto").onchange=function(){
