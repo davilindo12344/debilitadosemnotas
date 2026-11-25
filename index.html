@@ -902,16 +902,39 @@ $("fcGerar").onclick=async function(){
     var linhas=d.cards.map(function(c){return {user_id:uid,serie:serie,materia:materia,dificuldade:dif,pergunta:c.pergunta,resposta:c.resposta,explicacao:c.explicacao||""}});
     var r=await sb.from("flashcards").insert(linhas);
     if(r.error)throw new Error(r.error.message);
-    m.textContent=linhas.length+" flashcards criados!";m.className="msg ok";
-    $("fcTexto").value="";carregarFlashcards();
+    m.textContent=linhas.length+" flashcards criados!";
+m.className="msg ok";
+$("fcTexto").value="";
+await carregarFlashcards();
   }catch(e){m.textContent=e.message}
 };
 
 /* estudo */
 var fcCards=[],fcIdx=0,fcMostrar=false;
 async function carregarFlashcards(){
-  var r=await sb.from("flashcards").select("*").eq("serie",mySerie()).order("created_at",{ascending:false});
-  fcCards=r.data||[];fcIdx=0;fcMostrar=false;renderFc();
+ async function carregarFlashcards(){
+  var box=$("fcEstudo");
+
+  var r=await sb
+    .from("flashcards")
+    .select("*")
+    .eq("user_id",uid)
+    .eq("serie",mySerie())
+    .order("created_at",{ascending:false});
+
+  if(r.error){
+    box.innerHTML=
+      '<p style="color:#b91c1c">Erro ao carregar os flashcards: '+
+      esc(r.error.message)+
+      '</p>';
+    return;
+  }
+
+  fcCards=r.data||[];
+  fcIdx=0;
+  fcMostrar=false;
+  renderFc();
+}
 }
 function renderFc(){
  function renderFc(){
