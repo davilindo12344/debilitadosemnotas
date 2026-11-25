@@ -947,17 +947,19 @@ $("fcGerar").onclick=async function(){
   try{
     var d=await chamarIA({acao:"flashcards",texto:texto,materia:materia,serie:serie,dificuldade:dif,quantidade:5});
     var linhas=d.cards.map(function(c){return {user_id:uid,serie:serie,materia:materia,dificuldade:dif,pergunta:c.pergunta,resposta:c.resposta,explicacao:c.explicacao||""}});
-    var r=await sb.from("flashcards").insert(linhas);
+    var r=await sb.from("flashcards").insert(linhas).select("*");
     if(r.error)throw new Error(r.error.message);
     m.textContent=linhas.length+" flashcards criados!";
-m.className="msg ok";
-$("fcTexto").value="";
-await carregarFlashcards();
+    m.className="msg ok";
+    $("fcTexto").value="";
+    fcCards=(r.data||[]).slice(0,5);
+    fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcFinalizado=false;
+    renderFc();
   }catch(e){m.textContent=e.message}
 };
 
 /* estudo */
-var fcCards=[],fcIdx=0,fcMostrar=false;
+var fcCards=[],fcIdx=0,fcMostrar=false,fcSessaoAcertos=0,fcSessaoErros=0,fcFinalizado=false;
 async function carregarFlashcards(){
   var box=$("fcEstudo");
 
@@ -966,7 +968,8 @@ async function carregarFlashcards(){
     .select("*")
     .eq("user_id",uid)
     .eq("serie",mySerie())
-    .order("created_at",{ascending:false});
+    .order("created_at",{ascending:false})
+    .limit(5);
 
   if(r.error){
     box.innerHTML=
@@ -979,6 +982,9 @@ async function carregarFlashcards(){
   fcCards=r.data||[];
   fcIdx=0;
   fcMostrar=false;
+  fcSessaoAcertos=0;
+  fcSessaoErros=0;
+  fcFinalizado=false;
   renderFc();
 }
 function renderFc(){
@@ -989,15 +995,20 @@ function renderFc(){
     return;
   }
 
+  if(fcFinalizado){
+    var orientacao=fcSessaoAcertos>=4
+      ? "Excelente! Você dominou a maior parte do conteúdo."
+      : fcSessaoAcertos>=3
+        ? "Bom trabalho! Revise os cards que você errou."
+        : "Revise o conteúdo com atenção e tente novamente.";
+    box.innerHTML='<h3>Resultado da sessão</h3><p>Você terminou os 5 flashcards.</p>'+
+      '<table style="width:100%;border-collapse:collapse;text-align:center"><tr><th style="padding:8px;border:1px solid var(--line)">Acertos</th><th style="padding:8px;border:1px solid var(--line)">Erros</th></tr><tr><td style="padding:8px;border:1px solid var(--line);color:#15803d"><b>'+fcSessaoAcertos+'</b></td><td style="padding:8px;border:1px solid var(--line);color:#b91c1c"><b>'+fcSessaoErros+'</b></td></tr></table>'+
+      '<p><b>O que melhorar:</b> '+orientacao+'</p><button type="button" id="fcRecomecar">Estudar novamente</button>';
+    $("fcRecomecar").onclick=function(){fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcFinalizado=false;renderFc()};
+    return;
+  }
+
   var c=fcCards[fcIdx];
-  var acertos=fcCards.reduce(function(total,card){
-    return total+(card.acertos||0);
-  },0);
-
-  var erros=fcCards.reduce(function(total,card){
-    return total+(card.erros||0);
-  },0);
-
   box.innerHTML=
     '<small>'+esc(c.materia)+' · '+esc(c.dificuldade)+' · '+(fcIdx+1)+'/'+fcCards.length+'</small>'+
     '<div class="item">'+
@@ -1014,18 +1025,7 @@ function renderFc(){
         :
         '<button type="button" id="fcVer">Ver resposta</button>'
       )+
-    '</div>'+
-    '<h3>Resumo dos flashcards</h3>'+
-    '<table style="width:100%;border-collapse:collapse;text-align:center">'+
-      '<tr>'+
-        '<th style="padding:8px;border:1px solid var(--line)">Acertos</th>'+
-        '<th style="padding:8px;border:1px solid var(--line)">Erros</th>'+
-      '</tr>'+
-      '<tr>'+
-        '<td style="padding:8px;border:1px solid var(--line);color:#15803d"><b>'+acertos+'</b></td>'+
-        '<td style="padding:8px;border:1px solid var(--line);color:#b91c1c"><b>'+erros+'</b></td>'+
-      '</tr>'+
-    '</table>';
+    '</div>';
 
   if($("fcVer")){
     $("fcVer").onclick=function(){
@@ -1065,16 +1065,18 @@ async function marcar(acertou){
 
   if(acertou){
     c.acertos=(c.acertos||0)+1;
+    fcSessaoAcertos++;
   }else{
     c.erros=(c.erros||0)+1;
+    fcSessaoErros++;
   }
 
   fcMostrar=false;
 
-  if(fcIdx<fcCards.length-1){
+  if(fcIdx<4){
     fcIdx++;
   }else{
-    fcIdx=0;
+    fcFinalizado=true;
   }
 
   renderFc();
