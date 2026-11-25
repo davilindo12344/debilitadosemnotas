@@ -953,13 +953,13 @@ $("fcGerar").onclick=async function(){
     m.className="msg ok";
     $("fcTexto").value="";
     fcCards=(r.data||[]).slice(0,5);
-    fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcFinalizado=false;
+    fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcErrosLista=[];fcFinalizado=false;
     renderFc();
   }catch(e){m.textContent=e.message}
 };
 
 /* estudo */
-var fcCards=[],fcIdx=0,fcMostrar=false,fcSessaoAcertos=0,fcSessaoErros=0,fcFinalizado=false;
+var fcCards=[],fcIdx=0,fcMostrar=false,fcSessaoAcertos=0,fcSessaoErros=0,fcErrosLista=[],fcFinalizado=false;
 async function carregarFlashcards(){
   var box=$("fcEstudo");
 
@@ -984,6 +984,7 @@ async function carregarFlashcards(){
   fcMostrar=false;
   fcSessaoAcertos=0;
   fcSessaoErros=0;
+  fcErrosLista=[];
   fcFinalizado=false;
   renderFc();
 }
@@ -996,15 +997,16 @@ function renderFc(){
   }
 
   if(fcFinalizado){
-    var orientacao=fcSessaoAcertos>=4
-      ? "Excelente! Você dominou a maior parte do conteúdo."
-      : fcSessaoAcertos>=3
-        ? "Bom trabalho! Revise os cards que você errou."
-        : "Revise o conteúdo com atenção e tente novamente.";
+    var orientacao=fcSessaoErros===0
+      ? "Você não errou nenhum card. Continue praticando para manter o conteúdo."
+      : "Estude novamente os assuntos indicados abaixo e tente responder sem consultar a resposta.";
+    var errosHtml=fcErrosLista.length
+      ? '<h4>Questões para revisar</h4><ul>'+fcErrosLista.map(function(card){return '<li style="margin-bottom:10px"><b>'+esc(card.pergunta)+'</b><br><small>Estude: '+esc(card.resposta)+'</small></li>'}).join('')+'</ul>'
+      : '<p>Você acertou todas as questões!</p>';
     box.innerHTML='<h3>Resultado da sessão</h3><p>Você terminou os 5 flashcards.</p>'+
       '<table style="width:100%;border-collapse:collapse;text-align:center"><tr><th style="padding:8px;border:1px solid var(--line)">Acertos</th><th style="padding:8px;border:1px solid var(--line)">Erros</th></tr><tr><td style="padding:8px;border:1px solid var(--line);color:#15803d"><b>'+fcSessaoAcertos+'</b></td><td style="padding:8px;border:1px solid var(--line);color:#b91c1c"><b>'+fcSessaoErros+'</b></td></tr></table>'+
-      '<p><b>O que melhorar:</b> '+orientacao+'</p><button type="button" id="fcRecomecar">Estudar novamente</button>';
-    $("fcRecomecar").onclick=function(){fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcFinalizado=false;renderFc()};
+      '<p><b>O que melhorar:</b> '+orientacao+'</p>'+errosHtml+'<button type="button" id="fcRecomecar">Estudar novamente</button>';
+    $("fcRecomecar").onclick=function(){fcIdx=0;fcMostrar=false;fcSessaoAcertos=0;fcSessaoErros=0;fcErrosLista=[];fcFinalizado=false;renderFc()};
     return;
   }
 
@@ -1069,6 +1071,7 @@ async function marcar(acertou){
   }else{
     c.erros=(c.erros||0)+1;
     fcSessaoErros++;
+    fcErrosLista.push(c);
   }
 
   fcMostrar=false;
