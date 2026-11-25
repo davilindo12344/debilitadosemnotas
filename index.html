@@ -155,6 +155,7 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
           <button type="button" data-page="atividades">Atividades semanais</button>
           <button type="button" data-page="ranking">Ranking</button>
           <button type="button" data-page="conversao">Conversão do simulado</button>
+          <button type="button" data-page="estudos">Estudos</button>
         </div>
       </div>
       <span class="who-wrap"><span id="barAv"></span><span><span class="who" id="who"></span> <small id="sync"></small></span></span>
@@ -191,6 +192,42 @@ input[type=date],select,textarea{width:100%;padding:11px 12px;border:1.5px solid
 
   <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><div class="tri-tabs" id="rkTabs"></div><label for="rkSubjectSelect" style="display:block;margin-top:10px">Matéria</label><select id="rkSubjectSelect" style="width:100%;margin-top:6px"><option value="__all__">Todas as matérias</option></select><small>Escolha uma matéria ou veja a classificação geral da série.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
   <div id="page-conversao" class="panel hide"><div class="card"><h2>Conversão do simulado</h2><p>Informe a média obtida no simulado (0 a 1000) para ver a nota equivalente da AV2.</p><div class="field-grid"><div><label for="simMedia">Média do simulado</label><input id="simMedia" type="number" min="0" max="1000" step="1" placeholder="Ex.: 650"></div><div><label for="simArea">Área</label><select id="simArea"><option value="chcn">Ciências Humanas e Ciências da Natureza</option><option value="mt">Matemática</option><option value="lc">Linguagens</option></select></div></div><button id="simConverter" type="button" style="margin-top:12px">Converter para nota da AV2</button><div id="simResultado" class="big ok" style="margin-top:14px;display:none"></div><div id="simFaixa" class="msg"></div></div></div>
+  <div id="page-estudos" class="panel hide">
+  <div class="tabs">
+    <button id="estTabFc" type="button">Flashcards</button>
+    <button id="estTabChat" type="button" class="ghost">Tirar dúvidas</button>
+  </div>
+
+  <div id="estFlash">
+    <div class="card">
+      <h2>Gerar flashcards</h2>
+      <div class="field-grid">
+        <div><label for="fcMateria">Matéria</label><select id="fcMateria"></select></div>
+        <div><label for="fcDif">Dificuldade</label>
+          <select id="fcDif"><option value="facil">Fácil</option><option value="medio" selected>Médio</option><option value="dificil">Difícil</option></select></div>
+      </div>
+      <label for="fcTexto" style="margin-top:10px">Cole o conteúdo para gerar cards</label>
+      <textarea id="fcTexto" placeholder="Cole aqui o texto da matéria..."></textarea>
+      <div style="margin-top:10px"><button id="fcGerar" type="button">Gerar flashcards com IA</button></div>
+      <div class="msg" id="fcMsg"></div>
+    </div>
+    <div class="card">
+      <h2>Estudar</h2>
+      <div id="fcEstudo"></div>
+    </div>
+  </div>
+
+  <div id="estChat" class="hide">
+    <div class="card">
+      <h2>Tirar dúvidas</h2>
+      <div id="chatLog" style="max-height:50vh;overflow:auto;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="chatIn" placeholder="Pergunte sobre o site ou sobre a matéria...">
+        <button id="chatEnviar" type="button">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </section>
 </main>
 
@@ -229,7 +266,27 @@ CREATE POLICY "read_all_perfis" ON public.perfis
     </div>
   </div>
 </div>
+<style>
+#iaBtn{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;padding:0;background:var(--pen);color:var(--onpen);border:0;font-size:1.6rem;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:50;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#iaJanela{position:fixed;right:18px;bottom:88px;width:min(360px,calc(100vw - 36px));height:min(480px,60vh);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:50;display:flex;flex-direction:column;overflow:hidden}
+#iaJanela .cab{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
+#iaJanela .cab button{padding:4px 10px;font-size:.85rem}
+#iaLog{flex:1;overflow:auto;padding:12px 14px;font-size:.92rem}
+#iaLog p{margin:0 0 10px;white-space:pre-wrap}
+#iaJanela .rod{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+#iaJanela .rod input{flex:1;min-width:0}
+</style>
 
+<button id="iaBtn" type="button" aria-label="Tirar dúvidas com a IA">💬</button>
+
+<div id="iaJanela" class="hide">
+  <div class="cab"><span>Tirar dúvidas</span><button class="ghost" id="iaFechar" type="button">Fechar</button></div>
+  <div id="iaLog"></div>
+  <div class="rod">
+    <input type="text" id="iaIn" placeholder="Pergunte sobre o site ou a matéria...">
+    <button id="iaEnviar" type="button">Enviar</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function(){
@@ -480,11 +537,12 @@ function showLogin(){
 function closeMenu(){$("menuList").classList.add("hide");$("burger").setAttribute("aria-expanded","false")}
 $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classList.toggle("hide");this.setAttribute("aria-expanded",h?"false":"true")};
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
-var PAGES=["notas","perfil","calendario","conteudos","atividades","ranking","conversao"];
+var PAGES=["notas","perfil","calendario","conteudos","atividades","ranking","conversao","estudos"];
 function showPage(name){
   PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
   closeMenu();
+  if(name==="estudos"){fillFcMaterias();carregarFlashcards();mostrarEstudo("flash")}
   if(name==="ranking")loadRank();
 }
 Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.onclick=function(){showPage(b.dataset.page)}});
@@ -820,7 +878,112 @@ function render(){
   }
   $("annual").innerHTML=ah;
 }
+/* ===== IA: flashcards e chat ===== */
+var IA_URL=SUPABASE_URL+"/functions/v1/ia";
+async function chamarIA(body){
+  var s=await sb.auth.getSession();
+  var tok=s.data.session&&s.data.session.access_token;
+  var r=await fetch(IA_URL,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+tok,"apikey":SUPABASE_KEY},body:JSON.stringify(body)});
+  var d=await r.json();
+  if(!r.ok)throw new Error(d.error||"Erro na IA");
+  return d;
+}
+function fillFcMaterias(){
+  $("fcMateria").innerHTML=SUBJ.map(function(n){return "<option>"+esc(n)+"</option>"}).join("");
+}
 
+/* abas dentro de Estudos */
+function mostrarEstudo(qual){
+  var flash=qual==="flash";
+  $("estFlash").classList.toggle("hide",!flash);
+  $("estChat").classList.toggle("hide",flash);
+  $("estTabFc").className=flash?"":"ghost";
+  $("estTabChat").className=flash?"ghost":"";
+}
+$("estTabFc").onclick=function(){mostrarEstudo("flash")};
+$("estTabChat").onclick=function(){mostrarEstudo("chat")};
+
+/* gerar cards e salvar */
+$("fcGerar").onclick=async function(){
+  var m=$("fcMsg");m.className="msg";m.textContent="Gerando...";
+  var texto=$("fcTexto").value.trim();
+  if(texto.length<30){m.textContent="Cole um conteúdo com pelo menos 30 caracteres.";return}
+  var materia=$("fcMateria").value,dif=$("fcDif").value,serie=mySerie();
+  try{
+    var d=await chamarIA({acao:"flashcards",texto:texto,materia:materia,serie:serie,dificuldade:dif,quantidade:5});
+    var linhas=d.cards.map(function(c){return {user_id:uid,serie:serie,materia:materia,dificuldade:dif,pergunta:c.pergunta,resposta:c.resposta,explicacao:c.explicacao||""}});
+    var r=await sb.from("flashcards").insert(linhas);
+    if(r.error)throw new Error(r.error.message);
+    m.textContent=linhas.length+" flashcards criados!";m.className="msg ok";
+    $("fcTexto").value="";carregarFlashcards();
+  }catch(e){m.textContent=e.message}
+};
+
+/* estudo */
+var fcCards=[],fcIdx=0,fcMostrar=false;
+async function carregarFlashcards(){
+  var r=await sb.from("flashcards").select("*").eq("serie",mySerie()).order("created_at",{ascending:false});
+  fcCards=r.data||[];fcIdx=0;fcMostrar=false;renderFc();
+}
+function renderFc(){
+  var box=$("fcEstudo");
+  if(!fcCards.length){box.innerHTML="<small>Nenhum flashcard ainda. Gere um acima.</small>";return}
+  var c=fcCards[fcIdx];
+  box.innerHTML='<small>'+esc(c.materia)+' · '+esc(c.dificuldade)+' · '+(fcIdx+1)+'/'+fcCards.length+'</small>'+
+    '<div class="item"><h3>'+esc(c.pergunta)+'</h3>'+
+    (fcMostrar?'<p><b>Resposta:</b> '+esc(c.resposta)+'</p><div class="item-actions"><button type="button" id="fcAcerto">Acertei</button><button type="button" class="ghost" id="fcErro">Errei</button></div>':'<button type="button" id="fcVer">Ver resposta</button>')+
+    '</div>';
+  if($("fcVer"))$("fcVer").onclick=function(){fcMostrar=true;renderFc()};
+  if($("fcAcerto"))$("fcAcerto").onclick=function(){marcar(true)};
+  if($("fcErro"))$("fcErro").onclick=function(){marcar(false)};
+}
+async function marcar(acertou){
+  var c=fcCards[fcIdx];
+  await sb.from("flashcards").update(acertou?{acertos:c.acertos+1}:{erros:c.erros+1}).eq("id",c.id);
+  if(!acertou){
+    try{
+      var d=await chamarIA({acao:"explicar_erro",pergunta:c.pergunta,resposta_dada:"(errou)",resposta_certa:c.resposta});
+      alert(d.resposta);
+    }catch(e){alert(c.resposta)}
+  }
+  fcIdx=(fcIdx+1)%fcCards.length;fcMostrar=false;carregarFlashcards();
+}
+
+/* chat */
+var chatHist=[];
+function addChat(who,t){$("chatLog").innerHTML+='<p><b>'+esc(who)+':</b> '+esc(t)+'</p>';$("chatLog").scrollTop=1e9}
+$("chatEnviar").onclick=async function(){
+  var t=$("chatIn").value.trim();if(!t)return;
+  $("chatIn").value="";addChat("Você",t);
+  chatHist.push({role:"user",content:t});
+  try{
+    var d=await chamarIA({acao:"chat",mensagens:chatHist.slice(-20)});
+    chatHist.push({role:"assistant",content:d.resposta});
+    addChat("IA",d.resposta);
+  }catch(e){addChat("Erro",e.message)}
+};
+$("chatIn").onkeydown=function(e){if(e.key==="Enter")$("chatEnviar").click()};
+/* ===== Bolinha de IA (tirar dúvidas) ===== */
+$("iaBtn").onclick=function(){$("iaJanela").classList.toggle("hide")};
+$("iaFechar").onclick=function(){$("iaJanela").classList.add("hide")};
+
+var iaHist=[];
+function iaAdd(who,t){
+  $("iaLog").innerHTML+='<p><b>'+esc(who)+':</b> '+esc(t)+'</p>';
+  $("iaLog").scrollTop=1e9;
+}
+async function iaEnviar(){
+  var t=$("iaIn").value.trim();if(!t)return;
+  $("iaIn").value="";iaAdd("Você",t);
+  iaHist.push({role:"user",content:t});
+  try{
+    var d=await chamarIA({acao:"chat",mensagens:iaHist.slice(-20)});
+    iaHist.push({role:"assistant",content:d.resposta});
+    iaAdd("IA",d.resposta);
+  }catch(e){iaAdd("Erro",e.message)}
+}
+$("iaEnviar").onclick=iaEnviar;
+$("iaIn").onkeydown=function(e){if(e.key==="Enter")iaEnviar()};
 setMode("entrar");
 if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.")}
 else sb.auth.onAuthStateChange(function(ev,session){
