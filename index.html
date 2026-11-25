@@ -385,23 +385,70 @@ function setMode(m){
 $("tEntrar").onclick=function(){setMode("entrar")};
 $("tCriar").onclick=function(){setMode("criar")};
 $("go").onclick=async function(){
-  if(!sb){msg("Não foi possível carregar o Supabase. Verifique a internet.");return}
-  var em=$("email").value.trim(), p=$("senha").value, n=$("nome").value.trim(), serie=mode==="criar"?$("serieAcesso").value:"";
-  if(!em||!p){msg("Preencha e-mail e senha.");return}
+  if(!sb){
+    msg("Não foi possível carregar o Supabase. Verifique a internet.");
+    return;
+  }
+
+  var em=$("email").value.trim();
+  var p=$("senha").value;
+  var n=$("nome").value.trim();
+  var serie=mode==="criar"?$("serieAcesso").value:"";
+
+  if(!em||!p){
+    msg("Preencha e-mail e senha.");
+    return;
+  }
+
   $("go").disabled=true;
+
   try{
     if(mode==="criar"){
       if(!n){msg("Digite seu nome.");return}
       if(!serie){msg("Selecione sua série.");return}
-      if(p.length<6){msg("A senha precisa ter pelo menos 6 caracteres.");return}
-      var r=await sb.auth.signUp({email:em,password:p,options:{data:{name:n,serie:serie},emailRedirectTo:location.origin+location.pathname}});
-      if(r.error){msg(tr(r.error.message));return}
-      if(!r.data.session){setMode("entrar");msg("Conta criada! Confirme pelo link que enviamos para o seu e-mail e depois entre.",true)}
+      if(p.length<6){
+        msg("A senha precisa ter pelo menos 6 caracteres.");
+        return;
+      }
+
+      var r=await sb.auth.signUp({
+        email:em,
+        password:p,
+        options:{
+          data:{name:n,serie:serie},
+          emailRedirectTo:location.origin+location.pathname
+        }
+      });
+
+      if(r.error){
+        msg("Erro ao criar conta: "+tr(r.error.message));
+        return;
+      }
+
+      if(!r.data.session){
+        setMode("entrar");
+        msg("Conta criada! Confirme seu e-mail antes de entrar.",true);
+      }
     }else{
-      var r2=await sb.auth.signInWithPassword({email:em,password:p});
-      if(r2.error){msg(tr(r2.error.message));return}
+      var r2=await sb.auth.signInWithPassword({
+        email:em,
+        password:p
+      });
+
+      if(r2.error){
+        msg("Erro ao entrar: "+tr(r2.error.message));
+        return;
+      }
+
+      if(r2.data.user){
+        msg("Login realizado. Carregando...");
+      }
     }
-  }finally{$("go").disabled=false}
+  }catch(e){
+    msg("Erro inesperado: "+(e.message||e));
+  }finally{
+    $("go").disabled=false;
+  }
 };
 $("forgot").onclick=async function(){
   if(!sb)return;
