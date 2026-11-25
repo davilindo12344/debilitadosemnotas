@@ -587,7 +587,7 @@ function showLogin(){
 function closeMenu(){$("menuList").classList.add("hide");$("burger").setAttribute("aria-expanded","false")}
 $("burger").onclick=function(e){e.stopPropagation();var h=$("menuList").classList.toggle("hide");this.setAttribute("aria-expanded",h?"false":"true")};
 document.addEventListener("click",function(e){if(!e.target.closest(".menu"))closeMenu()});
-var PAGES=["notas","desempenho","calendario","atividades","conteudos","estudos","ranking","configuracoes","assinatura"];
+var PAGES=["notas","desempenho","calendario","atividades","conteudos","estudos","ranking","configuracoes","perfil","assinatura"];
 function showPage(name){
   PAGES.forEach(function(p){$("page-"+p).classList.toggle("hide",p!==name)});
   Array.prototype.forEach.call(document.querySelectorAll("[data-page]"),function(b){b.className=b.dataset.page===name?"on":""});
@@ -605,12 +605,18 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-config]"),function
   $("configTemaBox").classList.toggle("hide");
 }});
 function aplicarTema(t){
-  document.documentElement.setAttribute("data-theme",t==="blue"?"light":t);
+  document.documentElement.setAttribute("data-theme",t);
   localStorage.setItem("tema-site",t);
   if($("temaSelect"))$("temaSelect").value=t;
 }
-aplicarTema(localStorage.getItem("tema-site")||"blue");
-$("temaSelect").onchange=function(){aplicarTema(this.value)};
+if($("temaSelect")){
+  $("temaSelect").options[0].value="dark";$("temaSelect").options[0].textContent="Azul (padrão)";
+  $("temaSelect").options[1].textContent="Branco";
+  $("temaSelect").remove(2);
+  var btTema=document.createElement("button");btTema.type="button";btTema.id="definirTema";btTema.textContent="Definir tema";btTema.style.marginTop="8px";$("configTemaBox").appendChild(btTema);
+  btTema.onclick=function(){aplicarTema($("temaSelect").value);$("configMsg").textContent="Tema definido com sucesso.";$("configMsg").className="msg ok"};
+}
+aplicarTema(localStorage.getItem("tema-site")||"dark");
 Array.prototype.forEach.call(document.querySelectorAll("[data-tri]"),function(b){b.onclick=function(){activeTri=+b.dataset.tri;build();render()}});
 function renderDesempenho(){
   var sel=$("desempenhoMateria"),materias=subjectsFor(store.ano),atual=sel.value||st.sel;
