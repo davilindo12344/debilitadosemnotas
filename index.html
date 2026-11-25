@@ -282,6 +282,7 @@ var SUPABASE_URL="https://nhjquqlthjtivmvdlrlt.supabase.co";
 var SUPABASE_KEY="sb_publishable_w_WLOZDCs8nvZNAi-rxuPA_YMtvjAZt";
 var sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 var SERIES=["9º ano","1ª série","2ª série"];
+var REPRESENTANTE_ADMIN="stiuvismigue@gmail.com";
 // Troque pelos e-mails dos 2 representantes de cada turma (só eles editam calendário, conteúdos e atividades da própria turma).
 var REPS={
   "9º ano":["representante1.9ano@escola.com","representante2.9ano@escola.com"],
@@ -320,7 +321,9 @@ function normSerie(s){
   return SERIES.find(function(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")===v})||"";
 }
 function mySerie(){var s=userObj&&userObj.user_metadata&&userObj.user_metadata.serie;return SERIES.indexOf(s)>=0?s:SERIES[0]}
+function isRepAdmin(){return String(userObj&&userObj.email||"").trim().toLowerCase()===REPRESENTANTE_ADMIN}
 function mySeries(){
+  if(isRepAdmin())return SERIES.slice();
   var em=((userObj&&userObj.email)||"").trim().toLowerCase(),meta=(userObj&&userObj.user_metadata)||{};
   var role=String(meta.role||meta.perfil||meta.tipo||meta.cargo||"").trim().toLowerCase();
   var markedRep=meta.is_representative===true||meta.representante===true||["representante","representative","rep"].indexOf(role)>=0;
@@ -511,15 +514,15 @@ async function loadReps(){
   fillSeriesSelects();
 }
 function renderReps(){
-  var ms=mySeries(),em=((userObj&&userObj.email)||"").toLowerCase();
+  var admin=isRepAdmin(),ms=admin?SERIES.slice():mySeries(),em=((userObj&&userObj.email)||"").toLowerCase();
   $("repPanel").classList.toggle("hide",!ms.length);
   if(!ms.length)return;
   if(!repRows){$("repLista").innerHTML="";$("repMsg").className="msg";$("repMsg").textContent="Crie a tabela representantes no Supabase para gerenciar por aqui.";return}
   $("repLista").innerHTML=ms.map(function(sr){
     var list=repRows.filter(function(x){return x.serie===sr});
     var h='<div class="item" data-testid="rep-turma"><h3>'+esc(sr)+'</h3>';
-    h+=list.map(function(x){var me=x.email.toLowerCase()===em;return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-email">'+esc(x.email)+(me?' <small>(você)</small>':'')+'</span>'+(me?'':'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>')+'</div>'}).join("");
-    if(list.length<3)h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input type="email" placeholder="E-mail do outro representante" data-repin="'+esc(sr)+'" data-testid="rep-email-input" style="flex:1;min-width:200px"><button type="button" data-repadd="'+esc(sr)+'" data-testid="rep-add-btn">Adicionar</button></div>';
+    h+=list.map(function(x){var me=x.email.toLowerCase()===em,displayEmail=(!admin&&x.email.toLowerCase()===REPRESENTANTE_ADMIN)?"Stiuvis Migue":x.email;return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-email">'+esc(displayEmail)+(me?' <small>(você)</small>':'')+'</span>'+(admin?'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>':'')+'</div>'}).join("");
+    if(admin&&list.length<3)h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input type="email" placeholder="E-mail do representante" data-repin="'+esc(sr)+'" data-testid="rep-email-input" style="flex:1;min-width:200px"><button type="button" data-repadd="'+esc(sr)+'" data-testid="rep-add-btn">Adicionar</button></div>';
     return h+'</div>';
   }).join("");
   Array.prototype.forEach.call(document.querySelectorAll("[data-repadd]"),function(b){b.onclick=async function(){
