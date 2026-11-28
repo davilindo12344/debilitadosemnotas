@@ -1328,10 +1328,10 @@ function A(d,b,nm){
       var a=ix[j],v=d.g[t][a];
       if(v!=null)s+=v; else if(t===2){blanks++;names.push("AV"+(a+1))}
     }
-    var missing=0;
-    if(t===2)ix.forEach(function(a){if(d.g[t][a]==null)missing++});
-    var avg=R(t<2?s/N:(s+Math.min(b,missing*10))/N);
-    if(t===2)k3=s;
+    var missing=0,secicCap=0;
+    if(t===2)ix.forEach(function(a){var nota=d.g[t][a];if(nota==null){missing++;secicCap+=10}else secicCap+=Math.max(0,10-Number(nota))});
+    var avg=R(t<2?s/N:(s+Math.min(b,secicCap))/N);
+    if(t===2)k3=s+Math.min(b,secicCap);
     var r=d.r[t];
     if(r!=null&&r>avg){T[t]=r;rep[t]=true}else T[t]=avg;
   }
@@ -1341,7 +1341,7 @@ function A(d,b,nm){
   if(req<=1e-9||(r3!=null&&r3+1e-9>=req)){o.state="passed";return o}
   if(req>10+1e-9){o.state="impossible";o.short=(req-10);return o}
   if(blanks===0){
-    if(R(Math.min(10*N,k3+b)/N)+1e-9>=req)o.state="passed";
+    if(R(k3/N)+1e-9>=req)o.state="passed";
     else o.state=r3==null?"avr":"impossible";
     return o;
   }
