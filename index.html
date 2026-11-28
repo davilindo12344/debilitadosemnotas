@@ -557,7 +557,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px rgba(49,92,155,.18)
     <div class="wkbar"><button class="ghost" id="wkPrev" type="button">← Anterior</button><b id="wkLabel"></b><button class="ghost" id="wkNext" type="button">Próxima →</button></div>
     <div id="atTabela"></div><div class="msg" id="atMsg"></div></div></div>
 
-  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><button type="button" class="ghost" id="rkToggle" style="margin-bottom:10px">Não aparecer no ranking</button><div class="tri-tabs" id="rkTabs"></div><label for="rkSubjectSelect" style="display:block;margin-top:10px">Matéria</label><select id="rkSubjectSelect" style="width:100%;margin-top:6px"><option value="__all__">Todas as matérias</option></select><small>Escolha uma matéria ou veja a classificação geral da série.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
+  <div id="page-ranking" class="panel hide"><div class="card"><h2>Ranking por matéria</h2><button type="button" class="ghost" id="rkToggle" style="margin-bottom:10px">👻</button><div class="tri-tabs" id="rkTabs"></div><label for="rkSubjectSelect" style="display:block;margin-top:10px">Matéria</label><select id="rkSubjectSelect" style="width:100%;margin-top:6px"><option value="__all__">Todas as matérias</option></select><small>Escolha uma matéria ou veja a classificação geral da série.</small><div id="rkLista" style="margin-top:8px"></div><div class="msg" id="rkMsg"></div></div></div>
   <div id="page-conversao" class="panel hide"><div class="card"><h2>Conversão do simulado</h2><p>Informe a média obtida no simulado (0 a 1000) para ver a nota equivalente da AV2.</p><div class="field-grid"><div><label for="simMedia">Média do simulado</label><input id="simMedia" type="number" min="0" max="1000" step="1" placeholder="Ex.: 650"></div><div><label for="simArea">Área</label><select id="simArea"><option value="chcn">Ciências Humanas e Ciências da Natureza</option><option value="mt">Matemática</option><option value="lc">Linguagens</option></select></div></div><button id="simConverter" type="button" style="margin-top:12px">Converter para nota da AV2</button><div id="simResultado" class="big ok" style="margin-top:14px;display:none"></div><div id="simFaixa" class="msg"></div></div></div>
   <div id="page-estudos" class="panel hide">
 
@@ -1247,7 +1247,7 @@ async function loadRank(){
   $("rkSubjectSelect").onchange=function(){rankSubject=this.value;loadRank()};
   var me=await sb.from("perfis").select("ranking_visivel").eq("user_id",uid).maybeSingle();
   var visivel=!me.data||me.data.ranking_visivel!==false;
-  $("rkToggle").textContent=visivel?"👻 Ocultar do ranking":"👀 Voltar ao ranking";
+  $("rkToggle").textContent=visivel?"👻":"👀";
   $("rkToggle").onclick=function(){toggleRanking(visivel)};
   $("rkMsg").textContent="";$("rkLista").innerHTML='<small style="color:var(--mut)">Carregando...</small>';
   var r=await sb.from("perfis").select("user_id,nome,apelido,foto,serie,ranking_visivel").eq("serie",rankSerie).eq("ranking_visivel",true).limit(100);
