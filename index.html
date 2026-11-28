@@ -382,7 +382,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px rgba(49,92,155,.18)
 :root[data-theme="lightblue"] input,:root[data-theme="lightblue"] select,:root[data-theme="lightblue"] textarea{background:#fff;color:var(--ink)}
 :root[data-theme="lightblue"] .sb,:root[data-theme="lightblue"] .item,:root[data-theme="lightblue"] .rk{background:#f8fbff;color:var(--ink)}
 :root[data-theme="lightblue"] .menu-list{background:#f8fbff;color:var(--ink)}
-@media(max-width:520px){.subs{grid-template-columns:1fr;gap:8px}.sb{min-height:58px;padding:11px 13px;font-size:.92rem;line-height:1.2;border-radius:9px}.sb small{font-size:.72rem;line-height:1.2;margin-top:2px}.sb.sel{border-width:2px}.sb.sel::after{right:12px;top:10px;font-size:.8rem}.subs+.secic-card{margin-top:8px}}
+@media(max-width:520px){.subs{grid-template-columns:repeat(2,1fr);gap:5px}.sb{min-height:48px;padding:7px 8px;font-size:.78rem;line-height:1.1;border-radius:7px}.sb small{font-size:.61rem;line-height:1.1;margin-top:1px}.sb.sel{border-width:1.5px}.sb.sel::after{right:6px;top:5px;font-size:.65rem}.subs+.secic-card{margin-top:6px}}
 .msg:not(:empty){padding:9px 11px;border-radius:7px;background:rgba(59,130,246,.1);border:1px solid rgba(96,165,250,.2)}
 </style>
 </head>
@@ -1217,8 +1217,7 @@ function showSqlModal(){document.getElementById("sqlModal").style.display="block
 /* ranking */
 var rankSubject="__all__";
 function rankRound(x){
-  var v=Math.floor((Number(x)+1e-9)*10+0.499999999)/10;
-  return v.toFixed(1).replace(".",",");
+  return f(x);
 }
 function rankingAnnual(y,nm){
   var z=y&&y.sub&&y.sub[nm];
@@ -1289,7 +1288,7 @@ async function toggleRanking(visivel){
 }
 
 function num(v){if(v===""||v==null)return null;var x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x}
-function f(x){return (Math.round(x*100)/100).toString().replace(".",",")}
+function f(x){return R(Number(x)||0).toFixed(1).replace(".",",")}
 /* média do trimestre: 6,96 → 7,0 | 6,95 → 6,9 */
 function R(x){return Math.floor(x*10+0.5-1e-9)/10}
 /* nota necessária: sempre arredonda pra cima (1 casa) */
