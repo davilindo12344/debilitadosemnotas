@@ -489,9 +489,9 @@ textarea{min-height:90px;resize:vertical}
   <div id="page-desempenho" class="panel hide"><div class="card"><h2>Desempenho</h2><label for="desempenhoMateria">Escolha a matéria</label><select id="desempenhoMateria"></select><div id="desempenhoGrafico" style="display:flex;align-items:flex-end;justify-content:center;gap:28px;height:230px;margin-top:24px"></div><div id="desempenhoMsg" class="msg"></div></div></div>
 
   <div id="page-notas" class="panel">
-    <div class="card"><h2>Ano letivo</h2><p style="margin:4px 0 6px">Você está no <b id="anoAtual" data-testid="ano-atual"></b></p><small>Para mudar o ano letivo, vá até a aba Perfil.</small></div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;padding:14px 18px"><span style="font-size:.85rem;color:var(--mut);font-weight:600">Ano letivo</span><b id="anoAtual" data-testid="ano-atual" style="font-family:var(--display)"></b></div>
     <div class="card"><h2>Matérias</h2><div class="subs" id="subs"></div></div>
-    <div class="card"><h2>SECIC no 3º trimestre</h2><label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> Vou ter SECIC no 3º trimestre (+3 pontos)</label><small>O SECIC vale exatamente 3 pontos: 1 em cada AV do 3º tri, ou tudo na AV que faltar nota, sem passar de 10 por AV.</small></div>
+    <div class="card"><h2>SECIC no 3º trimestre</h2><label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> Vou ter SECIC no 3º trimestre (+3 pontos)</label></div>
     <h2 id="subTitle"></h2>
     <div class="tri-tabs"><button type="button" data-tri="0">1º trimestre</button><button type="button" class="ghost" data-tri="1">2º trimestre</button><button type="button" class="ghost" data-tri="2">3º trimestre</button></div>
     <div id="tris"></div><div class="card res" id="out"></div>
@@ -503,8 +503,8 @@ textarea{min-height:90px;resize:vertical}
     <label for="perfilNome">Nome <small style="color:#9ca3af;font-weight:400">(não editável)</small></label><input id="perfilNome" type="text" readonly disabled style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;border-color:#e5e7eb">
     <label for="perfilApelido" style="margin-top:10px">Apelido</label><input id="perfilApelido" type="text" maxlength="24" placeholder="Como você quer aparecer no ranking">
     <label for="perfilSerie" style="margin-top:10px">Série</label><select id="perfilSerie"><option>9º ano</option><option>1ª série</option><option>2ª série</option></select>
-    <div style="margin-top:12px"><button id="salvarPerfil" type="button">Salvar perfil</button></div><div class="msg" id="perfilMsg"></div><small>O perfil é atualizado na sua conta do Supabase.</small></div>
-    <div class="card hide" id="repPanel" data-testid="rep-panel"><h2>Representantes da turma</h2><small>Cada turma tem até 2 representantes. Você pode trocar o outro representante, mas não pode remover a si mesmo.</small><div id="repLista" style="margin-top:8px"></div><div class="msg" id="repMsg"></div></div></div>
+    <div style="margin-top:12px"><button id="salvarPerfil" type="button">Salvar perfil</button></div><div class="msg" id="perfilMsg"></div></div>
+    <div class="card hide" id="repPanel" data-testid="rep-panel" style="margin-top:24px"><h2>Representantes da turma</h2><small>Cada turma tem até 2 representantes. Você pode trocar o outro representante, mas não pode remover a si mesmo.</small><div id="repLista" style="margin-top:8px"></div><div class="msg" id="repMsg"></div></div></div>
 
   <div id="page-calendario" class="panel hide"><div class="card"><h2>Calendário de provas</h2><div id="calendarAdmin" class="hide" style="border:1.5px solid var(--pen);border-radius:12px;padding:14px;margin-bottom:14px;background:var(--soft)"><p style="margin:0 0 10px;font-size:.88rem;color:var(--mut)">✏️ <b>Área dos representantes</b> — preencha os campos e clique em <b>Adicionar ao calendário</b>.</p><div class="field-grid"><div><label for="evTitulo">Prova / atividade</label><input id="evTitulo" type="text" placeholder="Ex.: Prova de Matemática"></div><div><label for="evData">Data</label><input id="evData" type="date"></div><div><label for="evMateria">Matéria</label><input id="evMateria" type="text" placeholder="Matéria"></div><div><label for="evSerie">Série</label><select id="evSerie"></select></div></div><div style="margin-top:10px"><button id="addEvento" type="button">Adicionar ao calendário</button></div></div><div id="eventosLista"></div><div class="msg" id="calMsg"></div></div></div>
 
@@ -947,7 +947,7 @@ function renderDesempenho(){
   sel.onchange=renderDesempenho;
   var o=A(st.sub[sel.value],bonus(),sel.value),graf=$("desempenhoGrafico");
   graf.innerHTML=o.T.map(function(v,i){var val=Math.max(0,Math.min(10,Number(v)||0));return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:64px"><b>'+f(v)+'</b><div style="height:170px;width:42px;border-radius:8px 8px 0 0;background:var(--soft);display:flex;align-items:flex-end"><div style="height:'+(val*10)+'%;width:100%;background:var(--pen);border-radius:8px 8px 0 0"></div></div><b>'+(i+1)+'º tri</b></div>'}).join("");
-  $("desempenhoMsg").textContent="Médias de "+sel.value+" nos três trimestres.";
+  $("desempenhoMsg").textContent="";
 }
 
 async function loadVotacao(){
@@ -1361,9 +1361,9 @@ function render(){
   var annual=o.total/3, emFinal=o.total<21-1e-9, ah='<h2>Média anual e recuperação final</h2><p>Média anual: <b>'+f(annual)+'</b></p><p>Soma das médias dos trimestres: <b>'+f(o.total)+'</b> de 30</p>';
   if(emFinal){
     var needed=Math.max(0,(50-6*annual)/4);
-    ah+='<div class="big bad" data-testid="final-status">Está na final</div><p>Nota necessária na recuperação final (PNAF): <b data-testid="final-needed">'+(needed>10?'Acima de 10':f(Math.round(needed*10+1e-9)/10))+'</b> de 10</p><small>A soma dos trimestres ficou abaixo de 21. Cálculo conforme a tabela da escola: PNAF = (50 − 6 × média anual) ÷ 4, arredondado para uma casa decimal.</small>';
+    ah+='<div class="big bad" data-testid="final-status">Está na final</div><p>Nota necessária na PNAF: <b data-testid="final-needed">'+(needed>10?'Acima de 10':f(Math.round(needed*10+1e-9)/10))+'</b> de 10</p>';
   }else{
-    ah+='<div class="big ok" data-testid="final-status">Passado! Não precisa de final</div><small>A soma dos trimestres chegou a 21 ou mais, então não há recuperação final.</small>';
+    ah+='<div class="big ok" data-testid="final-status">Passado! Não precisa de final</div>';
   }
   $("annual").innerHTML=ah;
 }
