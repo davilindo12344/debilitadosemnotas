@@ -532,7 +532,7 @@ function renderReps(){
   $("repLista").innerHTML=ms.map(function(sr){
     var list=repRows.filter(function(x){return x.serie===sr});
     var h='<div class="item" data-testid="rep-turma"><h3>'+esc(sr)+'</h3>';
-    h+=list.map(function(x){var me=x.email.toLowerCase()===em,nome=x.nome||nomesRep[x.email.toLowerCase()]||"Representante",displayName=admin?nome+" · "+x.email:nome;return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-name">'+esc(displayName)+(me?' <small>(você)</small>':'')+'</span>'+(admin?'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>':'')+'</div>'}).join("");
+    h+=list.map(function(x){var me=x.email.toLowerCase()===em,nome=x.nome||nomesRep[x.email.toLowerCase()]||"Representante",displayName=nome;return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0"><span data-testid="rep-name">'+esc(displayName)+(me?' <small>(você)</small>':'')+'</span>'+(admin?'<button class="ghost" type="button" data-reprm="'+esc(sr)+'|'+esc(x.email)+'" data-testid="rep-remove-btn">Remover</button>':'')+'</div>'}).join("");
     if(admin&&list.length<3)h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input type="email" placeholder="E-mail do representante" data-repin="'+esc(sr)+'" data-testid="rep-email-input" style="flex:1;min-width:200px"><button type="button" data-repadd="'+esc(sr)+'" data-testid="rep-add-btn">Adicionar</button></div>';
     return h+'</div>';
   }).join("");
