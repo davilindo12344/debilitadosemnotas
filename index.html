@@ -360,6 +360,9 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px rgba(49,92,155,.18)
 .chip{background:#edf3fb;color:#315c9b;border-radius:5px}
 .item,.rk{border-radius:8px;background:#fff;box-shadow:none}
 .menu-list{border-radius:8px;box-shadow:0 4px 14px rgba(37,52,72,.12)}
+.who-info{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}.who-info #perfilSerieBar{font-size:.72rem;color:var(--mut);margin-top:2px}.who-info #sync{font-size:.68rem;margin-left:0;margin-top:2px}
+.secic-card{padding:12px 16px}.secic-toggle{display:inline-flex;align-items:center;gap:10px;margin:0;color:var(--ink);font-size:.95rem;font-weight:700;cursor:pointer}.secic-toggle input{position:absolute;opacity:0;pointer-events:none}.secic-slider{width:42px;height:24px;border-radius:20px;background:#29466f;border:1px solid rgba(147,197,253,.35);position:relative;transition:.2s}.secic-slider::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#b9c8dc;transition:.2s}.secic-toggle input:checked+.secic-slider{background:linear-gradient(135deg,#2563eb,#60a5fa)}.secic-toggle input:checked+.secic-slider::after{transform:translateX(18px);background:#fff}
+.secic-toggle{min-width:132px;justify-content:space-between;padding:7px 9px 7px 13px;border:1px solid rgba(147,197,253,.28);border-radius:999px;background:linear-gradient(135deg,rgba(20,52,104,.95),rgba(8,29,67,.95));box-shadow:0 4px 12px rgba(0,0,0,.16);transition:transform .15s,box-shadow .15s}.secic-toggle:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.25)}.secic-slider{width:48px;height:26px;background:#162f59;border-color:rgba(255,255,255,.22);box-shadow:inset 0 1px 3px rgba(0,0,0,.25)}.secic-slider::after{top:3px;left:3px;width:18px;height:18px;box-shadow:0 1px 4px rgba(0,0,0,.3)}.secic-toggle input:checked+.secic-slider{background:linear-gradient(135deg,#1d4ed8,#60a5fa);box-shadow:0 0 10px rgba(59,130,246,.4)}.secic-toggle input:checked+.secic-slider::after{transform:translateX(22px)}
 :root[data-theme="dark"],:root[data-theme="light"],:root[data-theme="lightblue"]{--paper:#041126;--paper2:#0a2145;--card:#0a2145;--card-border:rgba(147,197,253,.22);--ink:#eef6ff;--mut:#a9c2e2;--line:rgba(147,197,253,.23);--soft:rgba(96,165,250,.11);--pen:#3b82f6;--pen2:#82b7f5;color-scheme:dark}
 :root[data-theme="dark"] body,:root[data-theme="light"] body,:root[data-theme="lightblue"] body{background-color:#041126;background-image:linear-gradient(145deg,#020a1b 0%,#071d42 48%,#0b3268 100%);color:var(--ink)}
 :root[data-theme="dark"] .card,:root[data-theme="light"] .card,:root[data-theme="lightblue"] .card{background:rgba(10,33,69,.94);border-color:rgba(147,197,253,.22)}
@@ -506,7 +509,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px rgba(49,92,155,.18)
           <button type="button" data-page="assinatura">Assinatura</button>
         </div>
       </div>
-      <span class="who-wrap"><span id="barAv"></span><span><span class="who" id="who"></span> <small id="sync"></small></span></span>
+      <span class="who-wrap"><span id="barAv"></span><span class="who-info"><span class="who" id="who"></span><small id="perfilSerieBar"></small><small id="sync"></small></span></span>
     </div>
     <button class="ghost" id="logout" type="button">Sair</button>
   </div>
@@ -514,9 +517,9 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px rgba(49,92,155,.18)
   <div id="page-desempenho" class="panel hide"><div class="card"><h2>Desempenho</h2><label for="desempenhoMateria">Escolha a matéria</label><select id="desempenhoMateria"></select><div id="desempenhoGrafico" style="display:flex;align-items:flex-end;justify-content:center;gap:28px;height:230px;margin-top:24px"></div><div id="desempenhoMsg" class="msg"></div></div></div>
 
   <div id="page-notas" class="panel">
-    <div class="card" style="display:flex;align-items:center;gap:10px;padding:14px 18px"><b id="anoAtual" data-testid="ano-atual" style="font-family:var(--display)"></b></div>
+    <div style="display:none"><b id="anoAtual" data-testid="ano-atual"></b></div>
     <div class="card"><h2>Matérias</h2><div class="subs" id="subs"></div></div>
-    <div class="card"><h2>SECIC no 3º trimestre</h2><label class="sw" style="margin-top:12px"><input type="checkbox" id="sOn"> O SECIC vale 3 pontos: 1 em cada AV do 3º tri ou tudo na AV que faltar nota, sem passar de 10 por AV.</label></div>
+    <div class="card secic-card"><label class="secic-toggle"><input type="checkbox" id="sOn"><span class="secic-slider"></span><span>SECIC</span></label></div>
     <h2 id="subTitle"></h2>
     <div class="tri-tabs"><button type="button" data-tri="0">1º trimestre</button><button type="button" class="ghost" data-tri="1">2º trimestre</button><button type="button" class="ghost" data-tri="2">3º trimestre</button></div>
     <div id="tris"></div><div class="card res" id="out"></div>
@@ -852,6 +855,7 @@ async function startSession(u){
 function updateBar(){
   $("barAv").innerHTML=avHtml(prof.foto,dispName());
   $("who").textContent=dispName();
+  if($("perfilSerieBar"))$("perfilSerieBar").textContent=mySerie();
 }
 async function loadReps(){
   var rp=await sb.from("representantes_turma").select("*");
